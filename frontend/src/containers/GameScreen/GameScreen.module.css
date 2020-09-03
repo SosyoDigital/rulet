@@ -1,0 +1,37 @@
+.grid_container {
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    background: #55b9f3;
+    box-shadow:  36px 36px 47px #418db9, 
+                -36px -36px 47px #69e5ff;
+    border-radius: 40px;
+}
+
+  .item {
+    margin: 15px;
+  }
+  .submitButton {
+	background:linear-gradient(to bottom, #3498db 5%, #3742fa 150%);
+	background-color:#3498db;
+	border-radius:28px;
+	border:1px solid #3742fa;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+	font-family:Arial;
+	font-size:17px;
+	padding:16px 31px;
+	text-decoration:none;
+    text-shadow:0px 1px 0px #3742fd;
+}
+.submitButton:hover {
+	background:linear-gradient(to bottom, #3498dc 5%, #3742fd 100%);
+	background-color:#3498dc;
+}
+.submitButton:active {
+	position:relative;
+	top:1px;
+}

@@ -1,0 +1,22 @@
+{
+  "name": "casualita",
+  "version": "1.0.0",
+  "description": "Layer 2 based mini roulette on Matic Network using MaticVigil",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vaibhavmuchandi/casualita.git"
+  },
+  "author": "Vaibhav Muchandi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vaibhavmuchandi/casualita/issues"
+  },
+  "homepage": "https://github.com/vaibhavmuchandi/casualita#readme",
+  "dependencies": {
+    "react-router-dom": "^5.2.0"
+  }
+}

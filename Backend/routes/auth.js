@@ -2,27 +2,32 @@ const express = require('express');
 const router = express.Router()
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const Web3 = require('web3');
 const User = require('../models/user');
 const isLoggedIn = require('./middlewares/isLoggedIn');
+const web3 = new Web3()
 
 // @route POST api/user/register
 // @desc Add new user
 // @access Public
 
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
     const {username, password, email} = req.body
 
     if(!username || !email || !password){
         res.status(400).json({msg: 'Please enter all fields'})
     }
     
+    const ethAcc = await web3.eth.accounts.create();
     User.findOne({username: username})
         .then(user => {
             if(user) res.status(400).json({msg:'User already exists'})
             const newUser = new User({
                 username: username,
                 password: password,
-                email: email
+                email: email,
+                address: ethAcc.address,
+                privKey: ethAcc.privateKey
             })
             bcrypt.genSalt(10, (err, salt) => {
                 bcrypt.hash(newUser.password, salt, (err, hash) => {

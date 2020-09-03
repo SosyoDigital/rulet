@@ -5,4 +5,4 @@ const betSchema = new mongoose.Schema({
     result: Number
 })
 
-module.exports = mongoose.model("Bet", betSchema)
+module.exports = mongoose.model("Bets", betSchema)
