@@ -4,7 +4,10 @@ const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 const mongoose = require('mongoose');
 const mongoUri = "mongodb+srv://casualita-admin:vaibhav123V@cluster0.2czvc.mongodb.net/casualita?retryWrites=true&w=majority"
+const bodyParser = require('body-parser');
+const cors = require('cors')
 const userAuth = require('./routes/auth');
+const middleware = require('./routes/middlewares/isLoggedIn')
 mongoose.connect(mongoUri, {useNewUrlParser: true, useUnifiedTopology: true}, () => {console.log("Connected to DB")})
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }));

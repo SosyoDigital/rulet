@@ -36,7 +36,7 @@ export default class GamePanel extends React.Component {
                 <Col>
                     <Card className={classes.gamecard}>
                         <CardBody>
-                            <CardTitle><h2>02:30</h2></CardTitle>
+                            <CardTitle><h6>Account Balance: 15000 <Button outline pill size="sm">Add Tokens</Button></h6><h2>02:30</h2></CardTitle>
                             <Button onClick={() => this.choosebet('Red')} squared theme="danger" style={{margin:'2%'}} disabled={this.state.disableButtons}>
                                 Bet Red
                             </Button>
@@ -70,7 +70,9 @@ export default class GamePanel extends React.Component {
                     <Slider onSlide={this.handleSlide} pips={{ mode: "steps", stepped: true, density: 11 }} connect={[true, false]} start={[this.state.multiplier]} range={{ min: 1, max: 10 }} />
                     Total bet: {this.state.betAmount?this.state.betAmount:this.state.numberOfTokens}
                 </ModalBody>
-                <ModalFooter></ModalFooter>
+                <ModalFooter>
+                        Submit Buttons
+                </ModalFooter>
                 </Modal>
             </div>
         </div>

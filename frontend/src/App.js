@@ -1,17 +1,20 @@
 import React from 'react';
-import { Route } from 'react-router-dom';
+import { Route, withRouter } from 'react-router-dom';
 import NavBar from './components/Navigation/Navigation';
 import GameScreen from './components/GameScreen/GameScreen';
+import SignupScreen from './components/AuthScreens/Signup/Signup';
 import "bootstrap/dist/css/bootstrap.min.css";
-import "shards-ui/dist/css/shards.min.css"
+import "shards-ui/dist/css/shards.min.css";
+
 
 function App() {
   return (
     <div>
       <NavBar/>
       <Route path="/" exact component={GameScreen}/>
+      <Route path="/signup" exact component={SignupScreen}/>
     </div>
   );
 }
 
-export default App;
+export default withRouter(App);

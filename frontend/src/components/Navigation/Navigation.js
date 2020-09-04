@@ -6,35 +6,51 @@ import {
   Nav,
   NavItem,
   NavLink,
-  Dropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
   Collapse,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  Form, FormInput, FormGroup,
   Button
 } from "shards-react";
+import axios from 'axios'
+
 
 
 export default class NavBar extends React.Component {
   constructor(props) {
     super(props);
-
-    this.toggleDropdown = this.toggleDropdown.bind(this);
     this.toggleNavbar = this.toggleNavbar.bind(this);
-
+    this.openSignupModal = this.openSignupModal.bind(this);
+    this.openloginModal = this.openloginModal.bind(this);
     this.state = {
       dropdownOpen: false,
-      collapseOpen: false
+      collapseOpen: false,
+      signUpModalShow: false,
+      signUpUsernameInput: '',
+      signUpPasswordInput: '',
+      signUpConfirmPasswordInput: '',
+      signUpEmailInput: '',
+      loginModalShow: false,
+      loginUsernameInput: '',
+      loginPasswordInput: '',
+      msg: null,
+      isAuthenticated: false,
+      userToken: null,
+      username: ''
     };
   }
 
-  toggleDropdown() {
-    this.setState({
-      ...this.state,
-      ...{
-        dropdownOpen: !this.state.dropdownOpen
-      }
-    });
+  componentDidMount(){
+    this.usertoken = localStorage.getItem('token')
+    this.username = localStorage.getItem('user')
+    console.log(this.username)
+    if(this.usertoken && this.username){
+      this.setState({isAuthenticated: true, userToken: this.usertoken, username: this.username})
+    } else {
+      this.setState({msg: 'User not logged in!'})
+    }
+    console.log(this.state.username)
   }
 
   toggleNavbar() {
@@ -46,8 +62,104 @@ export default class NavBar extends React.Component {
     });
   }
 
+  openSignupModal(){
+    this.setState({
+      signUpModalShow: !this.state.signUpModalShow
+    });
+  }
+
+  openloginModal(){
+    this.setState({
+      loginModalShow: !this.state.signUpModalShow
+    });
+  }
+
+  async handleLoginSubmit(){
+    const resp = await axios.post('http://localhost:4000/user/login', {
+      username: this.state.loginUsernameInput,
+      password: this.state.loginPasswordInput
+    })
+    await localStorage.setItem('token', resp.data.token)
+    await localStorage.setItem('user', resp.data.user.username)
+    await localStorage.setItem('email', resp.data.user.email)
+    this.setState({username: resp.data.user.username, isAuthenticated: true, loginModalShow: !this.state.loginModalShow})
+  }
+
+  async handleSignupSubmit(){
+    await axios.post('http://localhost:4000/user/register', {
+      username: this.state.signUpUsernameInput,
+      password: this.state.signUpPasswordInput,
+      email: this.state.signUpEmailInput
+    })
+    .then(resp => {
+      this.setState({msg: resp.data.msg})
+      localStorage.setItem('token', resp.data.token)
+      localStorage.setItem('user', resp.data.user.username)
+      this.setState({signUpModalShow: !this.state.signUpModalShow, isAuthenticated: true})
+    })
+    .catch(err => {
+      this.setState({msg: err.msg})
+    })
+  }
+
+  async getUser(){
+    const userR = await localStorage.getItem('token')
+    console.log(userR)
+  }
+
+  handleLogout(){
+    this.setState({isAuthenticated: false, username: ''})
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+  }
+
   render() {
+    const signupmodal = <Modal open={this.state.signUpModalShow} toggle={this.openSignupModal}>
+                            <ModalHeader>Sign Up</ModalHeader>
+                            <ModalBody>
+                                <FormGroup>
+                                  <label htmlFor="#username">Username</label>
+                                  <FormInput onChange={e => this.setState({signUpUsernameInput: e.target.value})} id="#username" placeholder="Username" />
+                                </FormGroup>
+                                <FormGroup>
+                                  <label htmlFor="#email">Email</label>
+                                  <FormInput onChange={e => this.setState({signUpEmailInput: e.target.value})} id="#email" placeholder="Email" />
+                                </FormGroup>
+                                <FormGroup>
+                                  <label htmlFor="#password">Password</label>
+                                  <FormInput onChange={e => this.setState({signUpPasswordInput: e.target.value})} type="password" id="#password" placeholder="Password" />
+                                </FormGroup>
+                                <FormGroup>
+                                  <label htmlFor="#confirmpassword">Confirm Password</label>
+                                  <FormInput onChange={e => this.setState({signUpConfirmPasswordInput: e.target.value})} type="confirmpassword" id="#confirmpassword" placeholder="Password" />
+                                </FormGroup>
+                                <FormGroup>
+                                  <Button onClick={() => this.handleSignupSubmit()}>Submit</Button>
+                                  <span style={{marginLeft: '5%'}} onClick={() => this.setState({signUpModalShow:false})}>Cancel</span>
+                                </FormGroup>
+                          </ModalBody>
+                        </Modal>
+    const loginmodal = <Modal open={this.state.loginModalShow} toggle={this.openSignupModal}>
+                        <ModalHeader>Login</ModalHeader>
+                        <ModalBody>
+                          <Form>
+                            <FormGroup>
+                              <label htmlFor="#username">Username</label>
+                              <FormInput onChange={e => this.setState({loginUsernameInput: e.target.value})} id="#username" placeholder="Username" />
+                            </FormGroup>
+                            <FormGroup>
+                              <label htmlFor="#password">Password</label>
+                              <FormInput onChange={e => this.setState({loginPasswordInput: e.target.value})} type="password" id="#password" placeholder="Password" />
+                            </FormGroup>
+                            <FormGroup>
+                              <Button onClick={() => this.handleLoginSubmit()}>Login</Button>
+                              <span style={{marginLeft: '5%'}} onClick={() => this.setState({loginModalShow:false})}>Cancel</span>
+                            </FormGroup>
+                        </Form>
+                      </ModalBody>
+                    </Modal>
     return (
+      <div>
       <Navbar type="dark" theme="primary" expand="md">
         <NavbarBrand href="#">Casualità</NavbarBrand>
         <NavbarToggler onClick={this.toggleNavbar} />
@@ -59,37 +171,41 @@ export default class NavBar extends React.Component {
                 Play!
               </NavLink>
             </NavItem>
+            <NavItem>
+              <NavLink onClick={this.getUser}>
+                Get User
+              </NavLink>
+            </NavItem>
           </Nav>
-
+          {this.state.isAuthenticated ? 
           <Nav navbar className="ml-auto">
             <NavItem>
                 <NavLink active href="#">
-                    Login
+                    {this.state.username}
                 </NavLink>
             </NavItem>
             <NavItem>
-                <NavLink active href="#">
-                    Sign up
+                <NavLink onClick={() => this.handleLogout()}>
+                    Log Out
                 </NavLink>
-            </NavItem>
-            <NavItem>
-                <Dropdown
-                open={this.state.dropdownOpen}
-                toggle={this.toggleDropdown}
-                    >
-                    <DropdownToggle nav caret>
-                        Username
-                    </DropdownToggle>
-                    <DropdownMenu>
-                        <DropdownItem>My Profile</DropdownItem>
-                        <DropdownItem>Wallet</DropdownItem>
-                        <DropdownItem>Logout</DropdownItem>
-                    </DropdownMenu>
-                </Dropdown>
-            </NavItem>
-          </Nav>
+            </NavItem> 
+          </Nav> : <Nav navbar className="ml-auto">
+          <NavItem>
+              <NavLink active onClick={this.openloginModal}>
+                  Login
+              </NavLink>
+          </NavItem>
+          <NavItem>
+              <NavLink active onClick={this.openSignupModal}>
+                  Sign up
+              </NavLink>
+          </NavItem></Nav>
+        }
         </Collapse>
       </Navbar>
+      {signupmodal}
+      {loginmodal}
+      </div>
     );
   }
 }

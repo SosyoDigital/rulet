@@ -4,8 +4,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Web3 = require('web3');
 const User = require('../models/user');
-const isLoggedIn = require('./middlewares/isLoggedIn');
+const middleware = require('./middlewares/isLoggedIn');
 const web3 = new Web3()
+const jwtSecret = "hello_hi";
 
 // @route POST api/user/register
 // @desc Add new user
@@ -41,7 +42,7 @@ router.post('/register', async (req, res) => {
                                 {expiresIn: 36000},
                                 (err, token) => {
                                     if(err) throw err
-                                    res.status(200).json({msg: 'User created successfully', user: {username: user.username, email: user.email}, token})
+                                    res.status(200).json({msg: 'User created successfully', user: {username: user.username, email: user.email, address: user.address}, token})
                                 }
                             )
                         })
@@ -59,6 +60,7 @@ router.post('/login', (req, res) => {
     if(!username || !password){
         res.status(400).json({msg: 'Please enter all fields'})
     }
+    console.log(username, password)
     User.findOne({username: username})
         .then(user => {
             if(!user) res.status(400).json({msg:'User not found, please sign up'})
@@ -82,7 +84,7 @@ router.post('/login', (req, res) => {
 // @desc Get user data
 // @access Private
 
-router.get('/', isLoggedIn, (req, res) => {
+router.get('/', middleware.isLoggedIn, (req, res) => {
     User.findById(req.user.id)
         .select('-password')
         .then(user => res.json(user))

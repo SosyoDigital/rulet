@@ -1,6 +1,7 @@
 import React from 'react';
 import GamePanel from './GamePanel/GamePanel'
 import { Container, Row, Col } from "shards-react";
+import { withRouter } from 'react-router-dom';
 
 function GameScreen(){
     return(
@@ -24,4 +25,4 @@ function GameScreen(){
     )
 }
 
-export default GameScreen
+export default withRouter(GameScreen)
