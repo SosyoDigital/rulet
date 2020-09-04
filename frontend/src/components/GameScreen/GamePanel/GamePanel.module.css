@@ -1,0 +1,12 @@
+.gamecard{
+    border-radius: 50px;
+    background: linear-gradient(145deg, #a6cee6, #c5f5ff);
+    box-shadow:  20px 20px 46px #6d8796, 
+                 -20px -20px 46px #ffffff;
+}
+.numbercard{
+    border-radius: 50px;
+    background: linear-gradient(145deg, #a6cee6, #c5f5ff);
+    box-shadow:  20px 20px 46px #6d8796, 
+                 -20px -20px 46px #ffffff;
+}

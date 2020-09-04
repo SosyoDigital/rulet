@@ -1,19 +1,17 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { Route } from 'react-router-dom';
-import Layout from './components/Layout/Layout';
-import GameScreen from './containers/GameScreen/GameScreen';
+import NavBar from './components/Navigation/Navigation';
+import GameScreen from './components/GameScreen/GameScreen';
+import "bootstrap/dist/css/bootstrap.min.css";
+import "shards-ui/dist/css/shards.min.css"
 
-
-class App extends Component {
-  render(){
-    return(
-      <div>
-        <Layout>
-          <Route path='/' exact component={GameScreen}/>
-        </Layout>
-      </div>
-    )
-  }
+function App() {
+  return (
+    <div>
+      <NavBar/>
+      <Route path="/" exact component={GameScreen}/>
+    </div>
+  );
 }
 
 export default App;
