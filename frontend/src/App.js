@@ -12,7 +12,6 @@ function App() {
     <div>
       <NavBar/>
       <Route path="/" exact component={GameScreen}/>
-      <Route path="/signup" exact component={SignupScreen}/>
     </div>
   );
 }

@@ -4,11 +4,19 @@ import classes from './GamePanel.module.css'
 export default class GamePanel extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { open: false, numberOfTokens: 10, betChoice: null, betAmount: null, multiplier: 1, disableButtons: false};
+        this.state = { open: false, numberOfTokens: 10, betChoice: null, betAmount: null, multiplier: 1, disableButtons: false, isAuthenticated: null};
         this.handleSlide = this.handleSlide.bind(this);
         this.toggle = this.toggle.bind(this);
-      }
+        }
 
+    componentDidMount(){
+        this.user = localStorage.getItem('token')
+        if(this.user){
+            this.setState({isAuthenticated: true})
+        } else {
+            this.setState({isAuthenticated: false})
+        }
+    }
 
     choosebet = (choice) => {
         this.setState({betChoice: choice})
@@ -34,7 +42,8 @@ export default class GamePanel extends React.Component {
         <div style={{margin: '10%', textAlign:"center"}}>
             <Row>
                 <Col>
-                    <Card className={classes.gamecard}>
+                {this.state.isAuthenticated ?
+                    <Card className={classes.gamecard}> 
                         <CardBody>
                             <CardTitle><h6>Account Balance: 15000 <Button outline pill size="sm">Add Tokens</Button></h6><h2>02:30</h2></CardTitle>
                             <Button onClick={() => this.choosebet('Red')} squared theme="danger" style={{margin:'2%'}} disabled={this.state.disableButtons}>
@@ -53,8 +62,16 @@ export default class GamePanel extends React.Component {
                                     <Button onClick={() => this.choosebet(number)} theme="info" style={{margin: '1%'}} disabled={this.state.disableButtons}>{number}</Button>
                                 ))}
                             </CardBody>
-                        </Card>
+                        </Card> 
+                    </Card> 
+                    :
+                    <Card className={classes.gamecard}>
+                        <CardBody>
+                            <CardTitle><h2>You are not logged in!</h2></CardTitle>
+                            Please login to play the game.
+                        </CardBody>
                     </Card>
+                }
                 </Col>
             </Row>
             <div>

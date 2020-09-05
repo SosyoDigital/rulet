@@ -13,6 +13,8 @@ import {
   Form, FormInput, FormGroup,
   Button
 } from "shards-react";
+import { Redirect } from 'react-router-dom'
+import GameScreen from '../GameScreen/GameScreen'
 import axios from 'axios'
 
 
@@ -83,6 +85,7 @@ export default class NavBar extends React.Component {
     await localStorage.setItem('user', resp.data.user.username)
     await localStorage.setItem('email', resp.data.user.email)
     this.setState({username: resp.data.user.username, isAuthenticated: true, loginModalShow: !this.state.loginModalShow})
+    window.location.reload(false);
   }
 
   async handleSignupSubmit(){
@@ -96,6 +99,7 @@ export default class NavBar extends React.Component {
       localStorage.setItem('token', resp.data.token)
       localStorage.setItem('user', resp.data.user.username)
       this.setState({signUpModalShow: !this.state.signUpModalShow, isAuthenticated: true})
+      window.location.reload(false);
     })
     .catch(err => {
       this.setState({msg: err.msg})
@@ -111,6 +115,7 @@ export default class NavBar extends React.Component {
     this.setState({isAuthenticated: false, username: ''})
     localStorage.removeItem('token')
     localStorage.removeItem('user')
+    window.location.reload(false);
   }
 
   render() {

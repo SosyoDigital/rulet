@@ -60,7 +60,6 @@ router.post('/login', (req, res) => {
     if(!username || !password){
         res.status(400).json({msg: 'Please enter all fields'})
     }
-    console.log(username, password)
     User.findOne({username: username})
         .then(user => {
             if(!user) res.status(400).json({msg:'User not found, please sign up'})
