@@ -11,7 +11,8 @@ import {
   ModalHeader,
   ModalBody,
   Form, FormInput, FormGroup,
-  Button
+  Button,
+  Alert
 } from "shards-react";
 import { Redirect } from 'react-router-dom'
 import GameScreen from '../GameScreen/GameScreen'
@@ -39,7 +40,8 @@ export default class NavBar extends React.Component {
       msg: null,
       isAuthenticated: false,
       userToken: null,
-      username: ''
+      username: '',
+      isError: false
     };
   }
 
@@ -81,11 +83,16 @@ export default class NavBar extends React.Component {
       username: this.state.loginUsernameInput,
       password: this.state.loginPasswordInput
     })
-    await localStorage.setItem('token', resp.data.token)
-    await localStorage.setItem('user', resp.data.user.username)
-    await localStorage.setItem('email', resp.data.user.email)
-    this.setState({username: resp.data.user.username, isAuthenticated: true, loginModalShow: !this.state.loginModalShow})
-    window.location.reload(false);
+    console.log(resp.data)
+    if(resp.data.user){
+      await localStorage.setItem('token', resp.data.token)
+      await localStorage.setItem('user', resp.data.user.username)
+      await localStorage.setItem('email', resp.data.user.email)
+      this.setState({username: resp.data.user.username, isAuthenticated: true, loginModalShow: !this.state.loginModalShow, msg: resp.data.msg})
+      window.location.reload(false);
+    } else {
+      this.setState({isError: true, msg: resp.data.msg})
+    }
   }
 
   async handleSignupSubmit(){
@@ -117,6 +124,13 @@ export default class NavBar extends React.Component {
     localStorage.removeItem('user')
     window.location.reload(false);
   }
+  msg(m){
+    return(
+      <Alert theme="danger">
+        {m}
+      </Alert>
+    )
+  }
 
   render() {
     const signupmodal = <Modal open={this.state.signUpModalShow} toggle={this.openSignupModal}>
@@ -147,6 +161,7 @@ export default class NavBar extends React.Component {
     const loginmodal = <Modal open={this.state.loginModalShow} toggle={this.openSignupModal}>
                         <ModalHeader>Login</ModalHeader>
                         <ModalBody>
+                        {this.state.isError ? this.msg(this.state.msg) : null}
                           <Form>
                             <FormGroup>
                               <label htmlFor="#username">Username</label>

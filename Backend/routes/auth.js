@@ -58,14 +58,14 @@ router.post('/register', async (req, res) => {
 router.post('/login', (req, res) => {
     const { username, password } = req.body;
     if(!username || !password){
-        res.status(400).json({msg: 'Please enter all fields'})
+        res.status(200).json({msg: 'Please enter all fields'})
     }
     User.findOne({username: username})
         .then(user => {
-            if(!user) res.status(400).json({msg:'User not found, please sign up'})
+            if(user==null) res.status(200).json({msg:'User not found, please sign up'})
             bcrypt.compare(password, user.password)
                 .then(isMatch => {
-                    if(!isMatch) res.status(400).json({msg: 'Incorrect password!'})
+                    if(!isMatch) res.status(200).json({msg: 'Incorrect password!'})
                     jwt.sign(
                         {id: user.id},
                         jwtSecret,

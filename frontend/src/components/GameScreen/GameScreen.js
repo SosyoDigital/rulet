@@ -1,5 +1,6 @@
 import React from 'react';
-import GamePanel from './GamePanel/GamePanel'
+import GamePanel from './GamePanel/GamePanel';
+import RoundsPanel from './RoundsPanel/RoundsPanel'
 import { Container, Row, Col } from "shards-react";
 import { withRouter } from 'react-router-dom';
 
@@ -16,8 +17,8 @@ function GameScreen(){
             </Row>
 
             <Row>
-                <Col sm={{ size: 8, order: 2, offset: 2 }}>
-                    Previous Bets
+                <Col sm={{ size: 6, order: 2, offset: 3 }}>
+                    <RoundsPanel/>
                 </Col>
             </Row>
         </Container>
