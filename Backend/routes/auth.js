@@ -6,7 +6,7 @@ const Web3 = require('web3');
 const User = require('../models/user');
 const middleware = require('./middlewares/isLoggedIn');
 const web3 = new Web3()
-const jwtSecret = "hello_hi";
+const jwtSecret = "casualita";
 
 // @route POST api/user/register
 // @desc Add new user
@@ -87,6 +87,7 @@ router.get('/', middleware.isLoggedIn, (req, res) => {
     User.findById(req.user.id)
         .select('-password')
         .then(user => res.json(user))
+        .catch(err => console.log(err))
 })
 
 module.exports = router

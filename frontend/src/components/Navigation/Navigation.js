@@ -14,13 +14,12 @@ import {
   Button,
   Alert
 } from "shards-react";
-import { Redirect } from 'react-router-dom'
-import GameScreen from '../GameScreen/GameScreen'
+import {withRouter, Redirect} from 'react-router-dom'
 import axios from 'axios'
 
 
 
-export default class NavBar extends React.Component {
+class NavBar extends React.Component {
   constructor(props) {
     super(props);
     this.toggleNavbar = this.toggleNavbar.bind(this);
@@ -83,7 +82,7 @@ export default class NavBar extends React.Component {
       username: this.state.loginUsernameInput,
       password: this.state.loginPasswordInput
     })
-    console.log(resp.data)
+    console.log(resp.status)
     if(resp.data.user){
       await localStorage.setItem('token', resp.data.token)
       await localStorage.setItem('user', resp.data.user.username)
@@ -123,6 +122,7 @@ export default class NavBar extends React.Component {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     window.location.reload(false);
+    return(<Redirect to="/"/>)
   }
   msg(m){
     return(
@@ -187,7 +187,7 @@ export default class NavBar extends React.Component {
         <Collapse open={this.state.collapseOpen} navbar>
           <Nav navbar>
             <NavItem>
-              <NavLink active href="#">
+              <NavLink active href="/">
                 Play!
               </NavLink>
             </NavItem>
@@ -200,7 +200,7 @@ export default class NavBar extends React.Component {
           {this.state.isAuthenticated ? 
           <Nav navbar className="ml-auto">
             <NavItem>
-                <NavLink active href="#">
+                <NavLink active href="/profile">
                     {this.state.username}
                 </NavLink>
             </NavItem>
@@ -229,3 +229,6 @@ export default class NavBar extends React.Component {
     );
   }
 }
+
+
+export default withRouter(NavBar)

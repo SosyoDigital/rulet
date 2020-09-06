@@ -1,5 +1,5 @@
-import React, {useState, Component} from 'react';
-import { Container, Row, Col, Card, CardBody, CardTitle, Button, Modal, ModalBody, ModalHeader, ModalFooter, Slider } from "shards-react";
+import React from 'react';
+import { Row, Col, Card, CardBody, CardTitle, Button, Modal, ModalBody, ModalHeader, ModalFooter, Slider } from "shards-react";
 import classes from './GamePanel.module.css'
 export default class GamePanel extends React.Component {
     constructor(props) {
