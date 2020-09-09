@@ -3,9 +3,11 @@ const router = express.Router()
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Web3 = require('web3');
+const apiCall = require('../maticServices');
+const config = require('../config')
 const User = require('../models/user');
 const middleware = require('./middlewares/isLoggedIn');
-const web3 = new Web3()
+const web3 = new Web3();
 const jwtSecret = "casualita";
 
 // @route POST api/user/register
@@ -35,7 +37,12 @@ router.post('/register', async (req, res) => {
                     if(err) throw err;
                     newUser.password = hash
                     newUser.save()
-                        .then((user) => {
+                        .then(async(user) => {
+                            await apiCall.erc.signUpTransfer({
+                                sender: config.ercContract,
+                                recipient: user.address,
+                                amount: 1000
+                            })
                             jwt.sign(
                                 {id: user.id},
                                 jwtSecret,

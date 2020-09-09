@@ -15,8 +15,10 @@ import {
   Alert
 } from "shards-react";
 import {withRouter, Redirect} from 'react-router-dom'
+import socketIOClient from 'socket.io-client'
 import axios from 'axios'
-
+const ENDPOINT = 'http://127.0.0.1:4000'
+const socket = socketIOClient(ENDPOINT);
 
 
 class NavBar extends React.Component {
@@ -88,6 +90,7 @@ class NavBar extends React.Component {
       await localStorage.setItem('user', resp.data.user.username)
       await localStorage.setItem('email', resp.data.user.email)
       this.setState({username: resp.data.user.username, isAuthenticated: true, loginModalShow: !this.state.loginModalShow, msg: resp.data.msg})
+      socket.emit('login')
       window.location.reload(false);
     } else {
       this.setState({isError: true, msg: resp.data.msg})
@@ -105,6 +108,7 @@ class NavBar extends React.Component {
       localStorage.setItem('token', resp.data.token)
       localStorage.setItem('user', resp.data.user.username)
       this.setState({signUpModalShow: !this.state.signUpModalShow, isAuthenticated: true})
+      socket.emit('login')
       window.location.reload(false);
     })
     .catch(err => {
@@ -121,8 +125,8 @@ class NavBar extends React.Component {
     this.setState({isAuthenticated: false, username: ''})
     localStorage.removeItem('token')
     localStorage.removeItem('user')
+    socket.emit('logout')
     window.location.reload(false);
-    return(<Redirect to="/"/>)
   }
   msg(m){
     return(

@@ -9,6 +9,7 @@ import { withRouter } from 'react-router-dom';
 function UserProfile(){
     const[userDetails, setUserDetails] = useState(null)
     const[isLoading, setisLoading] = useState(true)
+    const [balance, setBalance] = useState(0)
     useEffect(() => {
         const token = localStorage.getItem('token')
         const getUser = async(token) => {
@@ -17,14 +18,28 @@ function UserProfile(){
                     'x-auth-token': token
                 }
             })
-            .then(resp => {setUserDetails(resp.data); setisLoading(false)})
+            .then(resp => {
+                setUserDetails(resp.data); 
+                getBalance(resp.data.address); 
+                setisLoading(false);
+            })
             .catch(err => console.log(err))
         }
         getUser(token)
-    })
+    }, [])
 
     const handlePasswordChange = () => {
         console.log(typeof(userDetails.address))
+    }
+
+    const getBalance = async (address) => {
+        const token = localStorage.getItem('token')
+        const resp = await axios.get('http://127.0.0.1:4000/user/getbalance', {
+            headers: {
+            'x-auth-token': token
+            }
+        })
+        setBalance(resp.data.balance)
     }
     return(
         isLoading ? <div/> :
@@ -56,11 +71,11 @@ function UserProfile(){
                             <CardBody>
                                         <Row><h6>Address: {userDetails.address}</h6> 
                                         </Row>
-                                        <Row><h6>Available Balance: 1000 CASU</h6></Row>
+                                        <Row><h6>Available Balance: {balance} CASU</h6></Row>
                                         <hr/>
                                         <Row style={{marginLeft: '10%'}}>
                                             <Col>
-                                                <Button outline theme="success">
+                                                <Button outline theme="success" onClick={() => getBalance()}>
                                                     Deposit
                                                 </Button>
                                             </Col>

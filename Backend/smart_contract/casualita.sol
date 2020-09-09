@@ -14,6 +14,7 @@ contract CasualitaTest {
     mapping (uint => mapping (uint => mapping (address => uint))) private roundbetAmount;
     mapping (uint => mapping (uint => mapping (address => uint))) private rounduserPick;
     mapping (uint => uint) public winningpick;
+    mapping (uint => bool) public isGreen;
     mapping (uint => bool) public isRoundOver;
     
     
@@ -33,16 +34,22 @@ contract CasualitaTest {
         return allPersonalBets[_addr];
     }
     
-    function submitWinningPick(uint256 _roundId, uint8 _sysPick) public {
+    function submitWinningPick(uint256 _roundId, uint8 _sysPick, bool _isGreen) public {
         winningpick[_roundId] = _sysPick;
+        isGreen[_roundId] = _isGreen
     }
     
     function getWinners(uint256 _roundId) public view returns (Bet[] memory numberwinners, Bet[] memory colorWinners, Bet[] memory greenWinners){
         uint256 winningPick = winningpick[_roundId];
-        if(winningPick == 0 || winningPick%2 == 0){
+        Bet[] memory b = new Bet[]
+        if(winningPick == 0 || && isGreen[_roundId]){
             return (winners[_roundId][winningPick], winners[_roundId][12], winners[_roundId][13]);
-        } else {
+        } else if (winningPick == 5 && isGreen[_roundId]){
             return (winners[_roundId][winningPick], winners[_roundId][11], winners[_roundId][13]);
+        }else if (winningPick == 0 || winningPick%2 == 0){
+            return (winners[_roundId][winningPick], winners[_roundId][12], b);
+        } else {
+            return (winners[_roundId][winningPick], winners[_roundId][11], b);
         }
         
     }

@@ -1,10 +1,14 @@
 import React from 'react';
 import { Row, Col, Card, CardBody, CardTitle, Button, Modal, ModalBody, ModalHeader, ModalFooter, Slider } from "shards-react";
 import classes from './GamePanel.module.css'
+import socketIOClient from 'socket.io-client'
+import axios from 'axios'
+const ENDPOINT = 'http://127.0.0.1:4000'
+const socket = socketIOClient(ENDPOINT);
 export default class GamePanel extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { open: false, numberOfTokens: 10, betChoice: null, betAmount: null, multiplier: 1, disableButtons: false, isAuthenticated: null};
+        this.state = { open: false, numberOfTokens: 10, betChoice: null, betAmount: null, multiplier: 1, disableButtons: false, isAuthenticated: null, minutes: 0, seconds: 0, balance: 0};
         this.handleSlide = this.handleSlide.bind(this);
         this.toggle = this.toggle.bind(this);
         }
@@ -13,9 +17,29 @@ export default class GamePanel extends React.Component {
         this.user = localStorage.getItem('token')
         if(this.user){
             this.setState({isAuthenticated: true})
+            this.getBalance()
+            socket.on('time-update', data => {
+                this.setState({minutes: data.minute, seconds: data.second});
+            })
+            socket.on('close-bets', data => {
+              this.setState({disableButtons: data})
+            })
+            socket.on('open-bets', data => {
+                this.setState({disableButtons: data})
+            })
         } else {
             this.setState({isAuthenticated: false})
         }
+    }
+
+    getBalance = async() => {
+        const token = localStorage.getItem('token')
+        const resp = await axios.get('http://127.0.0.1:4000/user/getbalance', {
+            headers: {
+            'x-auth-token': token
+            }
+        })
+        this.setState({balance: resp.data.balance})
     }
 
     choosebet = (choice) => {
@@ -45,7 +69,7 @@ export default class GamePanel extends React.Component {
                 {this.state.isAuthenticated ?
                     <Card className={classes.gamecard}> 
                         <CardBody>
-                            <CardTitle><h6>Account Balance: 15000 <Button outline pill size="sm">Add Tokens</Button></h6><h2>02:30</h2></CardTitle>
+                            <CardTitle><h6>Account Balance: {this.state.balance} CASU <Button outline pill size="sm">Add Tokens</Button></h6><h2>0{this.state.minutes} : {this.state.seconds>=0 && this.state.seconds<10 ? '0'+this.state.seconds : this.state.seconds}</h2></CardTitle>
                             <Button onClick={() => this.choosebet('Red')} squared theme="danger" style={{margin:'2%'}} disabled={this.state.disableButtons}>
                                 Bet Red
                             </Button>
