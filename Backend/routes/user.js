@@ -16,12 +16,14 @@ router.post('/addbet', middlewares.isLoggedIn, async (req, res) => {
     const amount = req.body.amount
     const pick = req.body.pick
     //Add MaticVigil calls here
-    apiCall.game.placeBet({
+    const payload = {
         _roundId: roundId,
         _addr: user.address,
         _pick: pick,
         _amt: amount
-    })
+    }
+    console.log(payload)
+    await apiCall.game.placeBet(payload)
     .then(response => {
         if(response.data.success){
             res.status(200).json({msg: 'Bet added!', txHash: response.data.data[0].txHash})
@@ -31,6 +33,7 @@ router.post('/addbet', middlewares.isLoggedIn, async (req, res) => {
             res.status(400).json({msg: 'Some error has occured!'})
         }
     })
+    .catch(e => console.log(e))
 })
 
 router.get('/getbalance',middlewares.isLoggedIn, async(req, res) => {

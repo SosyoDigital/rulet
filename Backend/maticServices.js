@@ -25,10 +25,19 @@ module.exports = {
     },
     game: {
         placeBet(payload){
-            return gameInstance.post('/placeBet', payload)
+            console.log(payload)
+            return gameInstance.post('/placeBet', {
+                _roundId: payload._roundId,
+                _addr: payload._addr,
+                _pick: payload._pick,
+                _amt: payload._amt
+            })
         },
         submitWinningPick(payload){
-            return gameInstance.post('/submitWinningPick', payload)
+            return gameInstance.post('/submitWinningPick', {
+                _roundId: payload._roundId,
+                _sysPick: payload._sysPick
+            })
         },
         getWinners(payload){
             return gameInstance.get('/getWinners/'+payload._roundId)

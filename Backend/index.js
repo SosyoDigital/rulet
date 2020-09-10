@@ -23,7 +23,7 @@ app.use(
 
 let numberOfActiveUsers = 0
 let numberOfLoggedinUsers = 0
-let roundId = 1
+let roundId = 10000
 let roundPick = null
 
 const time = {
@@ -40,9 +40,10 @@ setInterval(() => {
             time.minute += 1
         }
         console.log(time.minute, time.second)
-        io.emit('time-update', time)
+        io.emit('time-update', {time: time, roundId: roundId})
         if(time.minute == 2 && time.second == 30){
             io.emit('close-bets', true)
+            pickWinningNumber()
         }
         if(time.minute == 3 && time.second == 0){
             time.minute = 0
@@ -53,7 +54,7 @@ setInterval(() => {
     }
 }, 1000)
 
-function pickWinningNumber(){
+async function pickWinningNumber(){
     const pick = Math.floor(Math.random() * Math.floor(10))
     roundPick = pick
     let isGreen = false
@@ -67,15 +68,22 @@ function pickWinningNumber(){
         _sysPick: pick,
         _isGreen: isGreen
     }
-    const bet = new Bets(result).then(() => bet.save())
-    apiCalls.game.submitWinningPick(result).then(resp => {
-        if (resp.data.success) settleBets()
-        if (!resp.data.success) console.log("Some error occured")
-    })
+    const bet = new Bets(result)
+    console.log(pick, isGreen)
+    await bet.save()
+            .catch(err => console.log(err))
+    await apiCalls.game.submitWinningPick(result)
+            .then(resp => {
+                if (resp.data.success) settleBets();
+                if (!resp.data.success) console.log("Some error occured")
+            })
+            .catch(err => console.log(err))
 }
+
 
 async function settleBets(){
     const response = await apiCalls.game.getWinners({_roundId: roundId})
+                        .catch(e => console.log(e))
     const numberWinners = response.data.data[0].numberwinners
     const colorWinners = response.data.data[0].colorWinners
     const greenWinners = response.data.data[0].greenWinners

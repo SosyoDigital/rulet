@@ -104,12 +104,14 @@ class NavBar extends React.Component {
       email: this.state.signUpEmailInput
     })
     .then(resp => {
+      if(resp.data.success){
       this.setState({msg: resp.data.msg})
       localStorage.setItem('token', resp.data.token)
       localStorage.setItem('user', resp.data.user.username)
       this.setState({signUpModalShow: !this.state.signUpModalShow, isAuthenticated: true})
       socket.emit('login')
       window.location.reload(false);
+      }
     })
     .catch(err => {
       this.setState({msg: err.msg})
