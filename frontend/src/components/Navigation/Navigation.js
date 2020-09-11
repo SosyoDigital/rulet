@@ -14,9 +14,10 @@ import {
   Button,
   Alert
 } from "shards-react";
-import {withRouter, Redirect} from 'react-router-dom'
+import {withRouter} from 'react-router-dom'
 import socketIOClient from 'socket.io-client'
 import axios from 'axios'
+import Logo from '../../assets/logo2.png'
 const ENDPOINT = 'http://127.0.0.1:4000'
 const socket = socketIOClient(ENDPOINT);
 
@@ -187,7 +188,7 @@ class NavBar extends React.Component {
     return (
       <div>
       <Navbar type="dark" theme="primary" expand="md">
-        <NavbarBrand href="#">Casualità</NavbarBrand>
+        <NavbarBrand href="#"><img src={Logo} style={{height: 40}}/></NavbarBrand>
         <NavbarToggler onClick={this.toggleNavbar} />
 
         <Collapse open={this.state.collapseOpen} navbar>
