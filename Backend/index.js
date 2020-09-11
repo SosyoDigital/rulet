@@ -32,7 +32,7 @@ const time = {
 }
 
 
-setInterval(() => {
+setInterval(async() => {
     if(numberOfLoggedinUsers >= 1 && numberOfActiveUsers>=1){
         time.second += 1
         if(time.second == 60){
@@ -49,7 +49,8 @@ setInterval(() => {
             time.minute = 0
             time.second = 0
             roundId += 1
-            io.emit('open-bets', false)
+            const bets = await Bets.find({}) 
+            io.emit('open-bets', {bool: false, bets: bets})
         }
     }
 }, 1000)
@@ -104,7 +105,6 @@ async function settleBets(){
         claimBets(winners[i], roundId, i)
     }
 }
-
 
 async function claimBets(winners, roundId, i){
     const w = JSON.stringify(winners)
@@ -170,6 +170,11 @@ io.on('connection', (socket) => {
 
 app.use('/user', userAuth)
 app.use('/user', user)
+app.get('/allrounds', async (req, res) => {
+    const rounds = await Bets.find({})
+                    .catch(e => res.status(404).json({msg: 'Some error has occured'}))
+    res.status(200).json({allRounds: rounds})
+})
 
 
 server.listen(4000, () => {console.log("Server started")})
