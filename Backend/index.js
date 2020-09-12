@@ -9,6 +9,7 @@ const cors = require('cors')
 const userAuth = require('./routes/auth');
 const user = require('./routes/user');
 const Bets = require('./models/bets');
+const Score = require('./models/score');
 const middleware = require('./routes/middlewares/isLoggedIn');
 const apiCalls = require('./maticServices');
 mongoose.connect(mongoUri, {useNewUrlParser: true, useUnifiedTopology: true}, () => {console.log("Connected to DB")})
@@ -44,6 +45,9 @@ setInterval(async() => {
         if(time.minute == 2 && time.second == 30){
             io.emit('close-bets', true)
             pickWinningNumber()
+        }
+        if(time.minute == 2 && time.second == 55){
+            closeRound(roundId)
         }
         if(time.minute == 3 && time.second == 0){
             time.minute = 0
@@ -127,6 +131,10 @@ function getAllWinner(numberWinners, colorWinners, greenWinners){
     return winners
 }
 
+async function closeRound(roundId){
+    await apiCalls.game.closeRound({_roundId: roundId})
+}
+
 function testprime(n){
     if(n===1){
         return false
@@ -174,6 +182,11 @@ app.get('/allrounds', async (req, res) => {
     const rounds = await Bets.find({})
                     .catch(e => res.status(404).json({msg: 'Some error has occured'}))
     res.status(200).json({allRounds: rounds})
+})
+app.get('/getscores', async(req, res) => {
+    const scores = await Score.find({})
+                        .catch(e => res.status(404).json({msg: 'Some error has occured'}))
+    res.status(200).json({scores: scores})
 })
 
 

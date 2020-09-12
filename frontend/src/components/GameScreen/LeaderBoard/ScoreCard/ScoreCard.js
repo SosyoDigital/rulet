@@ -1,11 +1,10 @@
-import React, {useState, useEffect} from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
 import TableFooter from '@material-ui/core/TableFooter';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
@@ -15,10 +14,8 @@ import FirstPageIcon from '@material-ui/icons/FirstPage';
 import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
 import LastPageIcon from '@material-ui/icons/LastPage';
-import socketIOClient from 'socket.io-client'
+import Avatar from '@material-ui/core/Avatar';
 import axios from 'axios'
-const ENDPOINT = 'http://127.0.0.1:4000'
-const socket = socketIOClient(ENDPOINT);
 
 const useStyles1 = makeStyles((theme) => ({
   root: {
@@ -85,60 +82,32 @@ TablePaginationActions.propTypes = {
   rowsPerPage: PropTypes.number.isRequired,
 };
 
+const staticrows = [
+    {_userAddr: '0x2D4Ffc398E1E4Eb7C00e6A21127E9259d817D618', _betAmount: 100},{_userAddr: '0x2D4Ffc398E1E4Eb7C00e6A21127E9259d817D618', _betAmount: 150},{_userAddr: '0x2D4Ffc398E1E4Eb7C00e6A21127E9259d817D618', _betAmount: 90},{_userAddr: '0x2D4Ffc398E1E4Eb7C00e6A21127E9259d817D618', _betAmount: 200},{_userAddr: '0x2D4Ffc398E1E4Eb7C00e6A21127E9259d817D618', _betAmount: 230}
+].sort((a, b) => (a._betAmount > b._betAmount ? -1 : 1));
+
 const useStyles2 = makeStyles({
   table: {
     minWidth: 500,
   },
 });
 
-const useStyles3 = makeStyles({
-  blackbox: {
-    height: 20,
-    width: 20,
-    border: '1px solid black',
-    borderRadius: 7,
-    backgroundColor: 'black',
-    marginLeft: '50%'
-  },
-  redbox: {
-    height: 20,
-    width: 20,
-    border: '1px solid red',
-    borderRadius: 7,
-    backgroundColor: 'red',
-    marginLeft: '50%'
-  },
-  greenbox: {
-    height: 20,
-    width: 20,
-    border: '1px solid green',
-    backgroundColor: 'green',
-    borderRadius: 7,
-    alignSelf: 'right',
-    marginLeft: '50%',
-    marginTop: '5%'
-  }
-})
-
-export default function RoundsPanel() {
+export default function CustomPaginationActionsTable() {
   const classes = useStyles2();
-  const boxes = useStyles3();
-  const [rows, setRows] = useState(null)
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [rows, setRows] = React.useState(null)
 
   useEffect(() => {
-    getRounds()
-    async function getRounds(){
-      const resp = await axios.get('http://127.0.0.1:4000/allrounds')
-      const sortedRounds = resp.data.allRounds.sort((a, b) => (a._roundId > b._roundId ? -1 : 1));
-      setRows(sortedRounds)
-    }
-    socket.on('open-bets', data => {
-      const sortedRounds = data.bets.sort((a, b) => (a._roundId > b._roundId ? -1 : 1));
-      setRows(sortedRounds)
-    })
-  }, [])
+      async function getScores(){
+        await axios.get('http://127.0.0.1:4000/getscores')
+            .then(resp => {
+                const scores = resp.data.scores.sort((a, b) => (a._betAmount > b._betAmount ? -1 : 1));
+                setRows(scores)
+            })
+      }
+      getScores()
+  })
 
   const emptyRows = rows ? rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage) : null
 
@@ -155,27 +124,20 @@ export default function RoundsPanel() {
     <TableContainer component={Paper}>
     {rows ? 
       <Table className={classes.table} aria-label="custom pagination table">
-      <TableHead>
-          <TableRow  style={{background: '#A9A9A9'}}>
-            <TableCell><span style={{fontWeight: 'bold'}}>Round Number</span></TableCell>
-            <TableCell align="center"><span style={{fontWeight: 'bold'}}>Winning Number</span></TableCell>
-            <TableCell align="right"><span style={{fontWeight: 'bold'}}>Winning Colour</span></TableCell>
-          </TableRow>
-        </TableHead>
         <TableBody>
           {(rowsPerPage > 0
             ? rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
             : rows
           ).map((row) => (
-            <TableRow key={row._roundId}>
+            <TableRow key={row._userAddr}>
               <TableCell component="th" scope="row">
-                {row._roundId}
+                <Avatar>0x</Avatar> 
               </TableCell>
-              <TableCell style={{ width: 160 }} align="center">
-                {row._sysPick}
+              <TableCell component="th" scope="row">
+                {row._userAddr}
               </TableCell>
               <TableCell style={{ width: 160 }} align="right">
-                {row._sysPick%2===0?<div className={boxes.blackbox}/>: <div className={boxes.redbox}/>} {row._isGreen?<div className={boxes.greenbox}/>:null}
+                {row._betAmount}
               </TableCell>
             </TableRow>
           ))}
@@ -205,7 +167,7 @@ export default function RoundsPanel() {
           </TableRow>
         </TableFooter>
       </Table>
-      : <Table/>}
+      : <Table/> }
     </TableContainer>
   );
 }

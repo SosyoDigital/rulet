@@ -111,7 +111,7 @@ class NavBar extends React.Component {
       localStorage.setItem('user', resp.data.user.username)
       this.setState({signUpModalShow: !this.state.signUpModalShow, isAuthenticated: true})
       socket.emit('login')
-      window.location.reload(false);
+      window.location.reload();
       }
     })
     .catch(err => {
@@ -129,7 +129,7 @@ class NavBar extends React.Component {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     socket.emit('logout')
-    window.location.reload(false);
+    window.location.reload();
   }
   msg(m){
     return(
@@ -188,7 +188,7 @@ class NavBar extends React.Component {
     return (
       <div>
       <Navbar type="dark" theme="primary" expand="md">
-        <NavbarBrand href="#"><img src={Logo} style={{height: 40}}/></NavbarBrand>
+        <NavbarBrand href="/"><img src={Logo} style={{height: 40}}/></NavbarBrand>
         <NavbarToggler onClick={this.toggleNavbar} />
 
         <Collapse open={this.state.collapseOpen} navbar>
@@ -199,8 +199,8 @@ class NavBar extends React.Component {
               </NavLink>
             </NavItem>
             <NavItem>
-              <NavLink onClick={this.getUser}>
-                Get User
+              <NavLink href="/leaderboard">
+                Leaderboard
               </NavLink>
             </NavItem>
           </Nav>

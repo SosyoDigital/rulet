@@ -6,6 +6,7 @@ const Web3 = require('web3');
 const apiCall = require('../maticServices');
 const config = require('../config')
 const User = require('../models/user');
+const Score = require('../models/score')
 const middleware = require('./middlewares/isLoggedIn');
 const web3 = new Web3();
 const jwtSecret = "casualita";
@@ -32,6 +33,11 @@ router.post('/register', async (req, res) => {
                 address: ethAcc.address,
                 privKey: ethAcc.privateKey
             })
+            const newScore = new Score({
+                _userAddr: ethAcc.address,
+                _betAmount: 0
+            })
+            newScore.save()
             bcrypt.genSalt(10, (err, salt) => {
                 bcrypt.hash(newUser.password, salt, (err, hash) => {
                     if(err) throw err;

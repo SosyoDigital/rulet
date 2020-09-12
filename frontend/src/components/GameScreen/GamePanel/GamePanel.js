@@ -28,7 +28,7 @@ export default class GamePanel extends React.Component {
               this.setState({disableButtons: data})
             })
             socket.on('open-bets', data => {
-                this.setState({disableButtons: data})
+                this.setState({disableButtons: data.bool})
             })
         } else {
             this.setState({isAuthenticated: false})
@@ -130,7 +130,8 @@ export default class GamePanel extends React.Component {
                             </Button>
                         </CardBody>
                         <Card className={classes.numbercard}>
-                            <CardBody>
+                            <span style={{fontWeight: '400'}}>Bet Number</span>
+                            <CardBody style={{marginTop: '-5%'}}>
                                 {[0,1,2,3,4,5,6,7,8,9].map(number => (
                                     <Button onClick={() => this.choosebet(number)} theme="info" style={{margin: '1%'}} disabled={this.state.disableButtons}>{number}</Button>
                                 ))}

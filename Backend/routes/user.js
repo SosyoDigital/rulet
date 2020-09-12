@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router()
 const apiCall = require('../maticServices');
 const User = require('../models/user');
+const Score = require('../models/score');
 const middlewares = require('./middlewares/isLoggedIn');
 const isLoggedIn = require('./middlewares/isLoggedIn');
 
@@ -15,14 +16,17 @@ router.post('/addbet', middlewares.isLoggedIn, async (req, res) => {
     const roundId = req.body.roundId
     const amount = req.body.amount
     const pick = req.body.pick
-    //Add MaticVigil calls here
     const payload = {
         _roundId: roundId,
         _addr: user.address,
         _pick: pick,
         _amt: amount
     }
-    console.log(payload)
+    await Score.findOneAndUpdate({_userAddr: user.addr})
+        .then(user => {
+            user._betAmount += amount
+            user.save()
+        })
     await apiCall.game.placeBet(payload)
     .then(response => {
         if(response.data.success){
