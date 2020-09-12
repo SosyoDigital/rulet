@@ -14,7 +14,7 @@ import {
   Button,
   Alert
 } from "shards-react";
-import {withRouter} from 'react-router-dom'
+import {Redirect, withRouter} from 'react-router-dom'
 import socketIOClient from 'socket.io-client'
 import axios from 'axios'
 import Logo from '../../assets/logo2.png'
@@ -43,7 +43,8 @@ class NavBar extends React.Component {
       isAuthenticated: false,
       userToken: null,
       username: '',
-      isError: false
+      isError: false,
+      referralId: ''
     };
   }
 
@@ -99,11 +100,12 @@ class NavBar extends React.Component {
   }
 
   async handleSignupSubmit(){
-    if(signUpPasswordInput==signUpConfirmPasswordInput){
+    if(this.state.signUpPasswordInput==this.state.signUpConfirmPasswordInput){
       await axios.post('http://localhost:4000/user/register', {
         username: this.state.signUpUsernameInput,
         password: this.state.signUpPasswordInput,
-        email: this.state.signUpEmailInput
+        email: this.state.signUpEmailInput,
+        refId: this.state.referralId
       })
       .then(resp => {
         if(resp.data.success){
@@ -134,6 +136,9 @@ class NavBar extends React.Component {
     localStorage.removeItem('user')
     socket.emit('logout')
     window.location.reload();
+    return(
+      <Redirect to='/'/>
+    )
   }
   msg(m){
     return(
@@ -162,6 +167,10 @@ class NavBar extends React.Component {
                                 <FormGroup>
                                   <label htmlFor="#confirmpassword">Confirm Password</label>
                                   <FormInput onChange={e => this.setState({signUpConfirmPasswordInput: e.target.value})} type="password" id="#confirmpassword" placeholder="Password" />
+                                </FormGroup>
+                                <FormGroup>
+                                  <label htmlFor="#referralId">Referral Id</label>
+                                  <FormInput onChange={e => this.setState({referralId: e.target.value})} type="text" id="#referralId" placeholder="Referral Id" />
                                 </FormGroup>
                                 <FormGroup>
                                   <Button onClick={() => this.handleSignupSubmit()}>Submit</Button>
@@ -236,6 +245,7 @@ class NavBar extends React.Component {
       </Navbar>
       {signupmodal}
       {loginmodal}
+      {localStorage.getItem('user')?null:<Redirect to='/'/>}
       </div>
     );
   }

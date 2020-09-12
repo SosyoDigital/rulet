@@ -40,8 +40,7 @@ async function refFunction(username, refId){
 }
 
 router.post('/register', async (req, res) => {
-    const {username, password, email} = req.body
-    const refId = req.query.ref
+    const {username, password, email, refId} = req.body
     if(!username || !email || !password){
         res.status(400).json({msg: 'Please enter all fields'})
     }
