@@ -99,24 +99,28 @@ class NavBar extends React.Component {
   }
 
   async handleSignupSubmit(){
-    await axios.post('http://localhost:4000/user/register', {
-      username: this.state.signUpUsernameInput,
-      password: this.state.signUpPasswordInput,
-      email: this.state.signUpEmailInput
-    })
-    .then(resp => {
-      if(resp.data.success){
-      this.setState({msg: resp.data.msg})
-      localStorage.setItem('token', resp.data.token)
-      localStorage.setItem('user', resp.data.user.username)
-      this.setState({signUpModalShow: !this.state.signUpModalShow, isAuthenticated: true})
-      socket.emit('login')
-      window.location.reload();
-      }
-    })
-    .catch(err => {
-      this.setState({msg: err.msg})
-    })
+    if(signUpPasswordInput==signUpConfirmPasswordInput){
+      await axios.post('http://localhost:4000/user/register', {
+        username: this.state.signUpUsernameInput,
+        password: this.state.signUpPasswordInput,
+        email: this.state.signUpEmailInput
+      })
+      .then(resp => {
+        if(resp.data.success){
+        this.setState({msg: resp.data.msg})
+        localStorage.setItem('token', resp.data.token)
+        localStorage.setItem('user', resp.data.user.username)
+        this.setState({signUpModalShow: !this.state.signUpModalShow, isAuthenticated: true})
+        socket.emit('login')
+        window.location.reload();
+        }
+      })
+      .catch(err => {
+        this.setState({msg: err.msg})
+      })
+    } else {
+      this.setState({msg: 'Passwords dont match!'})
+    }
   }
 
   async getUser(){
@@ -157,7 +161,7 @@ class NavBar extends React.Component {
                                 </FormGroup>
                                 <FormGroup>
                                   <label htmlFor="#confirmpassword">Confirm Password</label>
-                                  <FormInput onChange={e => this.setState({signUpConfirmPasswordInput: e.target.value})} type="confirmpassword" id="#confirmpassword" placeholder="Password" />
+                                  <FormInput onChange={e => this.setState({signUpConfirmPasswordInput: e.target.value})} type="password" id="#confirmpassword" placeholder="Password" />
                                 </FormGroup>
                                 <FormGroup>
                                   <Button onClick={() => this.handleSignupSubmit()}>Submit</Button>

@@ -15,14 +15,39 @@ const jwtSecret = "casualita";
 // @desc Add new user
 // @access Public
 
+function makeid(l){
+    var text = "";
+    var char_list = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for(var i=0; i < l; i++ ){  
+    text += char_list.charAt(Math.floor(Math.random() * char_list.length));
+    }
+    return text;
+ }
+
+async function refFunction(username, refId){
+    await User.findOne({'referral.id': refId})
+        .then(referredUser => {
+            referredUser.referral.users.push(username)
+            referredUser.save()
+        })
+        .catch(err => {
+            console.log(err)
+        })
+    await User.findOne({username: username})
+        .then(referralUser => {
+            console.log(referralUser)
+        })
+}
+
 router.post('/register', async (req, res) => {
     const {username, password, email} = req.body
-
+    const refId = req.query.ref
     if(!username || !email || !password){
         res.status(400).json({msg: 'Please enter all fields'})
     }
     
     const ethAcc = await web3.eth.accounts.create();
+    const newrefId = makeid(8)
     User.findOne({username: username})
         .then(user => {
             if(user) res.status(400).json({msg:'User already exists'})
@@ -31,7 +56,11 @@ router.post('/register', async (req, res) => {
                 password: password,
                 email: email,
                 address: ethAcc.address,
-                privKey: ethAcc.privateKey
+                privKey: ethAcc.privateKey,
+                referral : {
+                    id: newrefId,
+                    users: []
+                }
             })
             const newScore = new Score({
                 _userAddr: ethAcc.address,
@@ -55,13 +84,16 @@ router.post('/register', async (req, res) => {
                                 {expiresIn: 36000},
                                 (err, token) => {
                                     if(err) throw err
-                                    res.status(200).json({msg: 'User created successfully', user: {username: user.username, email: user.email, address: user.address}, token})
+                                    res.status(200).json({success: true, msg: 'User created successfully', user: {username: user.username, email: user.email, address: user.address}, token})
                                 }
                             )
                         })
                 })
             })
         })
+        if(refId){
+            refFunction(username, refId)
+        }
 })
 
 // @route POST api/user/login

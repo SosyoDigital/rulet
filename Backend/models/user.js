@@ -5,7 +5,11 @@ const userSchema = new mongoose.Schema({
     password: String,
     email: String,
     address: String,
-    privKey: String
+    privKey: String,
+    referral: {
+        id: String,
+        users: [String]
+    }
 })
 
 module.exports = mongoose.model("User", userSchema)

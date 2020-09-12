@@ -84,7 +84,7 @@ export default class GamePanel extends React.Component {
             default:
                 p=betChoice
         }
-        await axios.post('http://127.0.0.1:4000/user/addbet',{
+        const resp = await axios.post('http://127.0.0.1:4000/user/addbet',{
             roundId: roundId,
             amount: betAmount,
             pick: p,
@@ -92,16 +92,16 @@ export default class GamePanel extends React.Component {
             headers: {
                 'x-auth-token': token
             }
+        }).catch(err => {
+            console.log(err)
         })
-        .then(resp => {
+        if(resp){
             if(resp.data.txHash){
                 this.toggle()
             }
             this.setState({msg: resp.data.msg})
-        })
-        .catch(err => {
-            console.log(err)
-        })
+        }
+        
     }
     const { open } = this.state;
     return(
