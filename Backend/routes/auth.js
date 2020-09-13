@@ -8,6 +8,7 @@ const config = require('../config')
 const User = require('../models/user');
 const Score = require('../models/score')
 const middleware = require('./middlewares/isLoggedIn');
+const otpServices = require('./otpServices')
 const web3 = new Web3();
 const jwtSecret = "casualita";
 
@@ -38,6 +39,29 @@ async function refFunction(username, refId){
             console.log(referralUser)
         })
 }
+
+router.post('/sendotp', async(req, res) => {
+    const resp = await otpServices.service.sendOtp(req.body.phoneNumber)
+        .catch(err => {
+            res.status(200).json({success: false, otpMsg: 'Some error has occured! Try again later'})
+            console.log(err)
+        })
+    res.status(200).json({success: true, sessionId: resp.data.Details})
+})
+
+router.post('/verifyotp', async(req, res) => {
+    const {sessionId, otp} = req.body
+    if(!otp) res.status(200).json({success: false, otpMsg: "Please enter otp!"})
+    const payload = {
+        sessionId : sessionId,
+        otpInput: otp
+    }
+    const resp = await otpServices.service.verifyOtp(payload)
+        .catch(err => {
+            res.status(200).json({success: false, otpMsg: 'Error! OTP not matched! Please try again!'})
+        })
+    res.status(200).json({success: true, data: resp.data})
+})
 
 router.post('/register', async (req, res) => {
     const {username, password, email, refId} = req.body
