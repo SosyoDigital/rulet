@@ -40,7 +40,7 @@ async function refFunction(username, refId){
         })
 }
 
-router.post('/sendotp', async(req, res) => {
+router.post('/register/sendotp', async(req, res) => {
     const resp = await otpServices.service.sendOtp(req.body.phoneNumber)
         .catch(err => {
             res.status(200).json({success: false, otpMsg: 'Some error has occured! Try again later'})
@@ -49,7 +49,7 @@ router.post('/sendotp', async(req, res) => {
     res.status(200).json({success: true, sessionId: resp.data.Details})
 })
 
-router.post('/verifyotp', async(req, res) => {
+router.post('/register/verifyotp', async(req, res) => {
     const {sessionId, otp} = req.body
     if(!otp) res.status(200).json({success: false, otpMsg: "Please enter otp!"})
     const payload = {

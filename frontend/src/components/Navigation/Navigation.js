@@ -18,6 +18,8 @@ import {Redirect, withRouter} from 'react-router-dom'
 import socketIOClient from 'socket.io-client'
 import axios from 'axios'
 import Logo from '../../assets/logo2.png'
+import ReactTelInput from 'react-telephone-input'
+import 'react-telephone-input/css/default.css'
 const ENDPOINT = 'http://127.0.0.1:4000'
 const socket = socketIOClient(ENDPOINT);
 
@@ -28,6 +30,7 @@ class NavBar extends React.Component {
     this.toggleNavbar = this.toggleNavbar.bind(this);
     this.openSignupModal = this.openSignupModal.bind(this);
     this.openloginModal = this.openloginModal.bind(this);
+    this.otpOpen = this.sendOtp.bind(this);
     this.state = {
       dropdownOpen: false,
       collapseOpen: false,
@@ -44,7 +47,10 @@ class NavBar extends React.Component {
       userToken: null,
       username: '',
       isError: false,
-      referralId: ''
+      referralId: '',
+      otpOpen: false,
+      signupOtpSession: null,
+      otpInput: ''
     };
   }
 
@@ -100,6 +106,7 @@ class NavBar extends React.Component {
   }
 
   async handleSignupSubmit(){
+    this.setState({otpOpen: !this.state.otpOpen})
     if(this.state.signUpPasswordInput==this.state.signUpConfirmPasswordInput){
       await axios.post('http://localhost:4000/user/register', {
         username: this.state.signUpUsernameInput,
@@ -122,6 +129,30 @@ class NavBar extends React.Component {
       })
     } else {
       this.setState({msg: 'Passwords dont match!'})
+    }
+  }
+
+  async sendOtp(){
+    const resp = await axios.post('http://127.0.0.1:4000/user/register/sendotp', {
+      phoneNumber: this.state.signUpUsernameInput
+    })
+    if(resp.data.success){
+      this.setState({signupOtpSession: resp.data.sessionId})
+    } else {
+      this.setState({msg: 'Some error has occured. Please try again later.', otpOpen: !this.state.otpOpen})
+    }
+    this.setState({otpOpen: !this.state.otpOpen})
+  }
+
+  async verifyOtp(){
+    const resp = await axios.post('http://127.0.0.1:4000/user/register/verifyotp', {
+      sessionId: this.state.signupOtpSession,
+      otp: this.state.otpInput
+    })
+    if(resp.data.success){
+      this.handleSignupSubmit()
+    } else {
+      this.setState({msg: 'Some error has occured. Please try again later.', otpOpen: !this.state.otpOpen})
     }
   }
 
@@ -149,12 +180,22 @@ class NavBar extends React.Component {
   }
 
   render() {
+    const otpModal = <Modal open={this.state.otpOpen} toggle={this.sendOtp}>
+                      <ModalHeader>Enter OTP</ModalHeader>
+                      <ModalBody>
+                          <FormGroup>
+                            <label htmlFor="#otp">Enter OTP sent to {this.state.signUpUsernameInput}</label>
+                            <FormInput onChange={e => this.setState({otpInput: e.target.value})} id="#otp" placeholder="Enter OTP"/>
+                          </FormGroup>
+                          <Button onClick={() => this.verifyOtp()}>Verify</Button>
+                        </ModalBody>
+                      </Modal>
     const signupmodal = <Modal open={this.state.signUpModalShow} toggle={this.openSignupModal}>
                             <ModalHeader>Sign Up</ModalHeader>
                             <ModalBody>
                                 <FormGroup>
-                                  <label htmlFor="#username">Username</label>
-                                  <FormInput onChange={e => this.setState({signUpUsernameInput: e.target.value})} id="#username" placeholder="Username" />
+                                  <label htmlFor="#username">Phone number  (OTP will be sent to this number for verification)</label>
+                                  <FormInput onChange={e => this.setState({signUpUsernameInput: e.target.value})} id="#username" placeholder="Phone number (Country code if residing outside IN)"/>
                                 </FormGroup>
                                 <FormGroup>
                                   <label htmlFor="#email">Email</label>
@@ -173,9 +214,10 @@ class NavBar extends React.Component {
                                   <FormInput onChange={e => this.setState({referralId: e.target.value})} type="text" id="#referralId" placeholder="Referral Id" />
                                 </FormGroup>
                                 <FormGroup>
-                                  <Button onClick={() => this.handleSignupSubmit()}>Submit</Button>
+                                  <Button onClick={() => this.sendOtp()}>Proceed</Button>
                                   <span style={{marginLeft: '5%'}} onClick={() => this.setState({signUpModalShow:false})}>Cancel</span>
                                 </FormGroup>
+                                {otpModal}
                           </ModalBody>
                         </Modal>
     const loginmodal = <Modal open={this.state.loginModalShow} toggle={this.openSignupModal}>
