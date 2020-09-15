@@ -10,7 +10,6 @@ const userAuth = require('./routes/auth');
 const user = require('./routes/user');
 const Bets = require('./models/bets');
 const Score = require('./models/score');
-const middleware = require('./routes/middlewares/isLoggedIn');
 const apiCalls = require('./maticServices');
 mongoose.connect(mongoUri, {useNewUrlParser: true, useUnifiedTopology: true}, () => {console.log("Connected to DB")})
 app.use(bodyParser.json())
@@ -24,14 +23,13 @@ app.use(
 
 let numberOfActiveUsers = 0
 let numberOfLoggedinUsers = 0
-let roundId = 70000
+let roundId = 80011
 let roundPick = null
 
 const time = {
     second: 0,
     minute: 0
 }
-
 
 setInterval(async() => {
     if(numberOfLoggedinUsers >= 1 && numberOfActiveUsers>=1){
@@ -82,16 +80,15 @@ async function pickWinningNumber(){
             .catch(err => console.log(err))
     await apiCalls.game.submitWinningPick(result)
             .then(resp => {
-                if (resp.data.success) settleBets();
                 if (!resp.data.success) console.log("Some error occured")
             })
             .catch(err => console.log(err))
 }
 
 
-async function settleBets(){
+async function settleBets(roundId){
     const response = await apiCalls.game.getWinners({_roundId: roundId})
-                        .catch(e => console.log(e))
+        .catch(e => console.log(e))
     const numberWinners = response.data.data[0].numberwinners
     const colorWinners = response.data.data[0].colorWinners
     const greenWinners = response.data.data[0].greenWinners
@@ -99,11 +96,12 @@ async function settleBets(){
     let winners = []
     let n = 0
     winnersSingle = getAllWinner(numberWinners, colorWinners, greenWinners)
+    console.log(winnersSingle)
     for(let i = 0; i<winnersSingle.length/10; i++){
         winners.push([])
         for(let j=0; j<10; j++){
             if(winnersSingle[n]){
-            winners[i].push(winnersSingle[n])
+                winners[i].push(winnersSingle[n])
             }
             n+=1
         }
@@ -114,6 +112,7 @@ async function settleBets(){
 }
 
 async function claimBets(winners, roundId, i){
+    console.log(winners, roundId, i)
     const w = JSON.stringify(winners)
     setTimeout(async() => {
         await apiCalls.game.claimBet({_addr: w, _roundId: roundId})
@@ -137,6 +136,7 @@ function getAllWinner(numberWinners, colorWinners, greenWinners){
 async function closeRound(roundId){
     await apiCalls.game.closeRound({_roundId: roundId})
 }
+
 
 function testprime(n){
     if(n===1){
