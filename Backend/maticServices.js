@@ -3,13 +3,13 @@ const config = require('./config');
 
 const ercInstance = axios.create({
     baseURL: config.api+config.ercContract,
-    timeout: 5000,
+    timeout: 7000,
     headers: {'X-API-KEY': config.apiKey}
 })
 
 const gameInstance = axios.create({
     baseURL: config.api+config.gameContract,
-    timeout: 5000,
+    timeout: 7000,
     headers: {'X-API-KEY': config.apiKey}
 })
 
@@ -21,6 +21,9 @@ module.exports = {
         },
         getBalance(payload){
             return ercInstance.get('/balanceOf/'+payload)
+        },
+        approve(payload){
+            return ercInstance.post('/approve', payload)
         }
     },
     game: {
@@ -34,10 +37,7 @@ module.exports = {
             })
         },
         submitWinningPick(payload){
-            return gameInstance.post('/submitWinningPick', {
-                _roundId: payload._roundId,
-                _sysPick: payload._sysPick
-            })
+            return gameInstance.post('/submitWinningPick', payload)
         },
         getWinners(payload){
             return gameInstance.get('/getWinners/'+payload._roundId)

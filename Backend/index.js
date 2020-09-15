@@ -11,6 +11,7 @@ const user = require('./routes/user');
 const Bets = require('./models/bets');
 const Score = require('./models/score');
 const apiCalls = require('./maticServices');
+const WebSocket = require('ws')
 mongoose.connect(mongoUri, {useNewUrlParser: true, useUnifiedTopology: true}, () => {console.log("Connected to DB")})
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -21,9 +22,11 @@ app.use(
     })
 );
 
+
+//GAME LOGIC FUNCTION - Start
 let numberOfActiveUsers = 0
 let numberOfLoggedinUsers = 0
-let roundId = 80011
+let roundId = 800
 let roundPick = null
 
 const time = {
@@ -44,7 +47,7 @@ setInterval(async() => {
             pickWinningNumber()
         }
         if(time.minute == 1 && time.second == 55){
-            closeRound(roundId)
+            //closeRound(roundId)
         }
         if(time.minute == 2 && time.second == 0){
             time.minute = 0
@@ -78,11 +81,12 @@ async function pickWinningNumber(){
     console.log(pick, isGreen)
     await bet.save()
             .catch(err => console.log(err))
+    console.log(result)
     await apiCalls.game.submitWinningPick(result)
             .then(resp => {
                 if (!resp.data.success) console.log("Some error occured")
             })
-            .catch(err => console.log(err))
+            .catch(err => {console.log(err.response.data.error); console.log(err.response.data.error.details.data)})
 }
 
 
@@ -116,6 +120,7 @@ async function claimBets(winners, roundId, i){
     const w = JSON.stringify(winners)
     setTimeout(async() => {
         await apiCalls.game.claimBet({_addr: w, _roundId: roundId})
+                .catch(err => {console.log(err.response.data.error); console.log(err.response.data.error.details.data)})
     }, 500*i)
 }
 
@@ -152,8 +157,10 @@ function testprime(n){
         return true
     }
 }
+//GAME LOGIC FUNCTIONS - End
 
 
+//Socket.io Client functions - Start
 io.on('connection', (socket) => {
     numberOfActiveUsers+=1
     console.log(numberOfActiveUsers)
@@ -178,19 +185,126 @@ io.on('connection', (socket) => {
         }
     })
 })
+//Socket functions - End
 
+//MaticVigil Websocket function - Start
+let wsConnection;
+const wsTries = 5;
+const timeout = 1000;
+let wsSessionID;
+
+initWS('284808ef-13f0-4537-bf73-0270d7881405'); //pass the read key.
+
+function initWS(key){
+    console.log('tries', wsTries);
+    if (wsTries <= 0){
+        console.error('unable to estabilish WS after 5 tries!');
+        wsConnection = null;
+        wsTries = 5;
+        wsSessionID = null;
+        return;
+    }
+    wsConnection = new WebSocket('wss://beta.ethvigil.com/ws');
+    wsConnection.onopen = function () {
+        wsConnection.send(JSON.stringify({
+            'command': 'register',
+            'key': key
+        }));
+    };
+
+    // Log errors
+    wsConnection.onerror = function (error) {
+        wsTries--;
+        console.error('WebSocket Error ', error);
+    };
+
+    //Log messages from the server
+    wsConnection.onmessage = function (d) {
+        try {
+            var data = JSON.parse(d.data);
+            if (data.command){
+                if (data.command == 'register:nack'){
+                    console.error('bad auth from WS');
+                    closeWS();
+                }
+                if (data.command == 'register:ack'){
+                    wsSessionID = data.sessionID;
+                    console.log('got sessionID', wsSessionID);
+                    heartbeat();
+                }
+                return;
+            }
+            if (data.type){
+                if (data.type == 'event'){
+                    if(data.event_name=='SubmitPick'){
+                        settleBets(data.event_data._roundId)
+                    }
+                }
+                return;
+            }
+            console.warn('got unrecognized json data', data);
+        }
+        catch (e){
+            console.error('got non json data', d.data, e);
+        }
+    };
+    wsConnection.onclose = function(e){
+        console.error('websocket error', e);
+        if (e.code != 1000){
+            closeWS();
+        } else {
+            setTimeout(function(){
+                initWS(key);
+            }, timeout);
+        }
+    };
+}
+
+function closeWS(){
+    if (wsConnection){
+        console.log('closing ws');
+        wsSessionID = null;
+        wsConnection.onclose = function(){
+            wsConnection = null;
+        };
+        wsConnection.close();
+    }
+}
+
+function heartbeat() {
+    if (!wsSessionID || !wsConnection || wsConnection.readyState !== 1){
+        return;
+    }
+    wsConnection.send(JSON.stringify({
+        command: "heartbeat",
+        sessionID: wsSessionID
+    }));
+    setTimeout(heartbeat, 30000);
+}
+//MaticVigil Websocket function - End
+
+//Routers - Start
 app.use('/user', userAuth)
 app.use('/user', user)
+
+// @route GET api/allrounds
+// @desc Return list of all the rounds and its result
+// @access Public
 app.get('/allrounds', async (req, res) => {
     const rounds = await Bets.find({})
                     .catch(e => res.status(404).json({msg: 'Some error has occured'}))
     res.status(200).json({allRounds: rounds})
 })
+
+// @route GET api/getscores
+// @desc Return list of all the players and their bet scores for leadeboard
+// @access Public
 app.get('/getscores', async(req, res) => {
     const scores = await Score.find({})
                         .catch(e => res.status(404).json({msg: 'Some error has occured'}))
     res.status(200).json({scores: scores})
 })
+//Routes - End
 
 
 server.listen(4000, () => {console.log("Server started")})

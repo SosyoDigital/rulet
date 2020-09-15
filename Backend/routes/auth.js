@@ -100,7 +100,12 @@ router.post('/register', async (req, res) => {
                                 sender: config.ercContract,
                                 recipient: user.address,
                                 amount: 1000
-                            })
+                            }) .catch(err => {console.log(err.response.data.error); console.log(err.response.data.error.details.data)})
+                            await apiCall.erc.approve({
+                                owner: user.address,
+                                spender: config.gameContract,
+                                value: 1000000
+                            }) .catch(err => {{console.log(err.response.data.error); console.log(err.response.data.error.details.data)}})
                             jwt.sign(
                                 {id: user.id},
                                 jwtSecret,

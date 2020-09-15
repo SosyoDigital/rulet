@@ -22,7 +22,7 @@ router.post('/addbet', middlewares.isLoggedIn, async (req, res) => {
         _pick: pick,
         _amt: amount
     }
-    await Score.findOneAndUpdate({_userAddr: user.addr})
+    await Score.findOne({_userAddr: user.address})
         .then(user => {
             user._betAmount += amount
             user.save()
@@ -37,7 +37,7 @@ router.post('/addbet', middlewares.isLoggedIn, async (req, res) => {
             res.status(400).json({msg: 'Some error has occured!'})
         }
     })
-    .catch(e => console.log(e))
+    .catch(err => {console.log(err.response.data.error); console.log(err.response.data.error.details.data)})
 })
 
 // @route GET api/user/getbalance
