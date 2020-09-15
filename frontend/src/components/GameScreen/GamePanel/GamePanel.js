@@ -8,7 +8,7 @@ const socket = socketIOClient(ENDPOINT);
 export default class GamePanel extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { open: false, numberOfTokens: 10, betChoice: null, betAmount: 10, multiplier: 1, disableButtons: false, isAuthenticated: null, minutes: 0, seconds: 0, balance: 0, roundId: 10000, msg:''};
+        this.state = { open: false, numberOfTokens: 10, betChoice: null, betAmount: 10, multiplier: 1, disableButtons: false, isAuthenticated: null, minutes: 0, seconds: 0, balance: 0, roundId: 0, msg:''};
         this.handleSlide = this.handleSlide.bind(this);
         this.toggle = this.toggle.bind(this);
         }
@@ -28,7 +28,10 @@ export default class GamePanel extends React.Component {
               this.setState({disableButtons: data})
             })
             socket.on('open-bets', data => {
-                this.setState({disableButtons: data.bool})
+                this.setState({disableButtons: data.bool, roundId: data.roundId})
+            })
+            socket.on('balance-update', data => {
+                this.getBalance()
             })
         } else {
             this.setState({isAuthenticated: false})
@@ -67,9 +70,7 @@ export default class GamePanel extends React.Component {
     cancelBet() {
         this.toggle()
     }
-
-    render(){
-    async function submitBet(roundId, betAmount, betChoice, token) {
+    async submitBet(roundId, betAmount, betChoice, token) {
         let p = null
         switch(betChoice){
             case "Red":
@@ -96,13 +97,14 @@ export default class GamePanel extends React.Component {
             console.log(err)
         })
         if(resp){
-            if(resp.data.txHash){
-                this.toggle()
-            }
+            this.toggle()
+            this.getBalance()
             this.setState({msg: resp.data.msg})
         }
         
     }
+
+    render(){
     const { open } = this.state;
     return(
         <div style={{margin: '10%', textAlign:"center"}}>
@@ -163,7 +165,7 @@ export default class GamePanel extends React.Component {
                 </ModalBody>
                 <ModalFooter>
                     <Button outline theme="light" onClick={() => this.cancelBet()}>Cancel</Button>
-                    <Button theme="success" onClick={() => submitBet(this.state.roundId, this.state.betAmount, this.state.betChoice, this.state.token)}>Place Bet</Button>
+                    <Button theme="success" onClick={() => this.submitBet(this.state.roundId, this.state.betAmount, this.state.betChoice, this.state.token)}>Place Bet</Button>
                 </ModalFooter>
                 </Modal>
             </div>

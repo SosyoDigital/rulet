@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Card, CardHeader, CardTitle, CardBody, Button } from "shards-react";
+import { Container, Row, Col, Card, CardHeader, CardTitle, CardBody, Button, Modal, ModalHeader, ModalBody, FormInput, FormGroup, Alert } from "shards-react";
 import axios from 'axios'
 import Avatar from '@material-ui/core/Avatar';
 import profileImage from '../../assets/person.png'
@@ -12,6 +12,10 @@ function UserProfile(){
     const[balance, setBalance] = useState(0)
     const[copied, setCopied] = useState('')
     const[referralId, setreferralId] = useState('')
+    const[showPasswordModal, setPasswordModal] = useState(false)
+    const[currentPassword, setCurrentPassword] = useState('')
+    const[newPassword, setNewPassword] = useState('')
+    const[passwordMsg, setPasswordMsg] = useState('')
     useEffect(() => {
         const token = localStorage.getItem('token')
         const getUser = async(token) => {
@@ -32,8 +36,19 @@ function UserProfile(){
         getUser(token)
     }, [])
 
-    const handlePasswordChange = () => {
-        console.log(typeof(userDetails.address))
+    const handlePasswordChange = async() => {
+        const token = localStorage.getItem('token')
+        const resp = await axios.post('http://127.0.0.1:4000/user/changepassword',{
+            currentPassword: currentPassword,
+            newPassword: newPassword
+        },{headers: {
+            'x-auth-token': token
+        }})
+        if(resp.data.success){
+            setPasswordMsg(resp.data.msg)
+        } else {
+            setPasswordMsg(resp.data.msg)
+        }
     }
 
     const getBalance = async (address) => {
@@ -50,6 +65,24 @@ function UserProfile(){
         setCopied('Copied to clipboard!')
     }
     const copysvg = <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+    const changePasswordModal = <Modal open={showPasswordModal}>
+                                <ModalHeader>Change Password</ModalHeader>
+                                   <ModalBody>
+                                   {passwordMsg!='' ? <Alert theme="secondary">{passwordMsg}</Alert> : null}
+                                    <FormGroup>
+                                        <label htmlFor="#currentpassword">Enter your current password</label>
+                                        <FormInput type="password" onChange={e => setCurrentPassword(e.target.value)} id="#currentpassword" placeholder="Current password"/>                               
+                                    </FormGroup>
+                                    <FormGroup>
+                                        <label htmlFor="#newpassword">Enter new password</label>
+                                        <FormInput type="password" onChange={e => setNewPassword(e.target.value)} id="#newpassword" placeholder="New password"/>
+                                    </FormGroup>
+                                    <FormGroup>
+                                        <Button outline theme='light' onClick={() => {setPasswordModal(!showPasswordModal); setPasswordMsg('')}} style={{marginRight: '2%'}}>Cancel</Button>
+                                        <Button onClick={handlePasswordChange}>Submit</Button>
+                                    </FormGroup>
+                                   </ModalBody>
+                                </Modal>
     return(
         isLoading ? <div/> :
         <div>
@@ -72,7 +105,7 @@ function UserProfile(){
                                 </Row>
                                 <Row style={{marginTop: '3%', textAlign: 'center'}}>
                                     <Col>
-                                        <Button onClick={() => handlePasswordChange()} outline theme="warning" size="sm">Change Password</Button>
+                                        <Button onClick={() => setPasswordModal(!showPasswordModal)} outline theme="warning" size="sm">Change Password</Button>
                                     </Col>
                                     <Col>
                                         <Button outline theme="info" size="sm">Export Private Key</Button>
@@ -80,7 +113,7 @@ function UserProfile(){
                                 </Row>
                             </CardHeader>
                             <CardBody>
-                                <Row><h6>Address: {userDetails.address}</h6> </Row>
+                                <Row><h6>Address: <span style={{fontSize: '0.7em'}}>{userDetails.address}</span></h6> </Row>
                                 <Row><h6>Available Balance: {balance} CASU</h6></Row>
                                 <Row>
                                     <h6 style={{marginRight: '2%'}}>Referral Id: {referralId}</h6>
@@ -88,17 +121,19 @@ function UserProfile(){
                                     {copied}
                                 </Row>
                                 <hr/>
-                                <Row style={{marginLeft: '10%'}}>
-                                    <Col>
+                                <Row style={{alignSelf: 'center'}}>
+                                    <Col></Col>
+                                        <Col>
                                         <Button outline theme="success" onClick={() => getBalance()}>
                                             Deposit
                                         </Button>
-                                    </Col>
-                                    <Col>
+                                        </Col>
+                                        <Col>
                                         <Button outline theme="secondary">
                                             Withdraw
                                         </Button>
-                                    </Col>
+                                        </Col>
+                                    <Col></Col>
                                 </Row>
                                 <Row style={{marginTop: '5%'}}>
                                     <Button block>View Bet History</Button>
@@ -109,6 +144,7 @@ function UserProfile(){
                 <Col sm="12" md="4" lg="3"/>
             </Row>
         </Container>
+        {changePasswordModal}
         </div>
     )
 }

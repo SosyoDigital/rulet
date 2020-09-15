@@ -150,7 +150,6 @@ router.post('/login', (req, res) => {
 // @route GET api/user
 // @desc Get user data
 // @access Private
-
 router.get('/', middleware.isLoggedIn, (req, res) => {
     User.findById(req.user.id)
         .select('-password')

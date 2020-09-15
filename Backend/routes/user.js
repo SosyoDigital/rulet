@@ -4,7 +4,7 @@ const apiCall = require('../maticServices');
 const User = require('../models/user');
 const Score = require('../models/score');
 const middlewares = require('./middlewares/isLoggedIn');
-const isLoggedIn = require('./middlewares/isLoggedIn');
+const bcrypt = require('bcryptjs');
 
 // @route POST api/bets/addbet
 // @desc Add new bet
@@ -40,6 +40,9 @@ router.post('/addbet', middlewares.isLoggedIn, async (req, res) => {
     .catch(e => console.log(e))
 })
 
+// @route GET api/user/getbalance
+// @desc Query users balance
+// @access Private
 router.get('/getbalance',middlewares.isLoggedIn, async(req, res) => {
     const user = await User.findById(req.user.id)
                     .select('-password -privKey')
@@ -47,6 +50,33 @@ router.get('/getbalance',middlewares.isLoggedIn, async(req, res) => {
     if(resp.data.success){
         res.status(200).json({addr: user.address, balance: resp.data.data[0].uint256})
     }
+})
+
+// @route POST api/user/changepassword
+// @desc Change users password
+// @access Private
+router.post('/changepassword', middlewares.isLoggedIn, async(req, res) => {
+    const currentPassword = req.body.currentPassword
+    const newPassword = req.body.newPassword
+    await User.findById(req.user.id)
+        .then(user => {
+            if(user==null) res.status(200).json({msg:'User not found, please sign up'})
+            bcrypt.compare(currentPassword, user.password)
+                .then(isMatch => {
+                    if(!isMatch){ res.status(200).json({success: false, msg: 'Please enter correct current password!'}) 
+                        return; 
+                    }
+                    bcrypt.genSalt(10, (err, salt) => {
+                        bcrypt.hash(newPassword, salt, async(err, hash) => {
+                            if(err) throw err;
+                            user.password = hash
+                            await user.save()
+                            res.status(200).json({success: true, msg: 'Password Changed!'})
+                        })
+                    })
+                })
+            })
+        .catch(err => console.log(err))
 })
 
 module.exports = router

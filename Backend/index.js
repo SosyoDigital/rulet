@@ -24,7 +24,7 @@ app.use(
 
 let numberOfActiveUsers = 0
 let numberOfLoggedinUsers = 0
-let roundId = 10000
+let roundId = 70000
 let roundPick = null
 
 const time = {
@@ -40,24 +40,27 @@ setInterval(async() => {
             time.second = 0
             time.minute += 1
         }
-        console.log(time.minute, time.second)
         io.emit('time-update', {time: time, roundId: roundId})
-        if(time.minute == 2 && time.second == 30){
+        if(time.minute == 1 && time.second == 30){
             io.emit('close-bets', true)
             pickWinningNumber()
         }
-        if(time.minute == 2 && time.second == 55){
+        if(time.minute == 1 && time.second == 55){
             closeRound(roundId)
         }
-        if(time.minute == 3 && time.second == 0){
+        if(time.minute == 2 && time.second == 0){
             time.minute = 0
             time.second = 0
             roundId += 1
             const bets = await Bets.find({}) 
-            io.emit('open-bets', {bool: false, bets: bets})
+            io.emit('open-bets', {bool: false, bets: bets, roundId: roundId})
         }
     }
 }, 1000)
+
+setInterval(() => {
+    io.emit('balance-update')
+}, 15000)
 
 async function pickWinningNumber(){
     const pick = Math.floor(Math.random() * Math.floor(10))
