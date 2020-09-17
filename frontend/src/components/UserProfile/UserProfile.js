@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Card, CardHeader, CardTitle, CardBody, Button, Modal, ModalHeader, ModalBody, FormInput, FormGroup, Alert } from "shards-react";
-import axios from 'axios'
+import { Container, Row, Col, Card, CardHeader, CardTitle, CardBody, Button, Modal, ModalHeader, ModalBody, FormInput, FormGroup, Alert} from "shards-react";
+import API from '../../axiosInstance'
 import Avatar from '@material-ui/core/Avatar';
 import profileImage from '../../assets/person.png'
-import { withRouter, Redirect } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 
 
-function UserProfile(){
+function UserProfile(props){
     const[userDetails, setUserDetails] = useState(null)
     const[isLoading, setisLoading] = useState(true)
     const[balance, setBalance] = useState(0)
@@ -16,10 +16,11 @@ function UserProfile(){
     const[currentPassword, setCurrentPassword] = useState('')
     const[newPassword, setNewPassword] = useState('')
     const[passwordMsg, setPasswordMsg] = useState('')
+
     useEffect(() => {
         const token = localStorage.getItem('token')
         const getUser = async(token) => {
-            await axios.get('http://localhost:4000/user', {
+            await API.get('/user', {
                 headers: {
                     'x-auth-token': token
                 }
@@ -38,7 +39,7 @@ function UserProfile(){
 
     const handlePasswordChange = async() => {
         const token = localStorage.getItem('token')
-        const resp = await axios.post('http://127.0.0.1:4000/user/changepassword',{
+        const resp = await API.post('/user/changepassword',{
             currentPassword: currentPassword,
             newPassword: newPassword
         },{headers: {
@@ -53,7 +54,7 @@ function UserProfile(){
 
     const getBalance = async (address) => {
         const token = localStorage.getItem('token')
-        const resp = await axios.get('http://127.0.0.1:4000/user/getbalance', {
+        const resp = await API.get('/user/getbalance', {
             headers: {
             'x-auth-token': token
             }
@@ -64,11 +65,28 @@ function UserProfile(){
         navigator.clipboard.writeText("www.casualita.app Sign up with my referral id to win 100 bonus tokens! Referral Id: "+userDetails.referral.id)
         setCopied('Copied to clipboard!')
     }
+
+    const getPrivateKey = async() => {
+        const token = localStorage.getItem('token')
+        const resp = await API.get('/user/getprivatekey',{
+            headers: {
+            'x-auth-token': token
+            }
+        })
+        const element = document.createElement("a");
+        const data = JSON.stringify({'address': userDetails.address, 'privateKey' : resp.data.privateKey})
+        const file = new File([data], {type: 'text/plain;charset=utf-8'})
+        element.href = URL.createObjectURL(file)
+        element.download = 'Casualita-Acc.txt'
+        document.body.appendChild(element)
+        element.click()
+    }
+
     const copysvg = <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
     const changePasswordModal = <Modal open={showPasswordModal}>
                                 <ModalHeader>Change Password</ModalHeader>
                                    <ModalBody>
-                                   {passwordMsg!='' ? <Alert theme="secondary">{passwordMsg}</Alert> : null}
+                                   {passwordMsg!=='' ? <Alert theme="secondary">{passwordMsg}</Alert> : null}
                                     <FormGroup>
                                         <label htmlFor="#currentpassword">Enter your current password</label>
                                         <FormInput type="password" onChange={e => setCurrentPassword(e.target.value)} id="#currentpassword" placeholder="Current password"/>                               
@@ -108,7 +126,7 @@ function UserProfile(){
                                         <Button onClick={() => setPasswordModal(!showPasswordModal)} outline theme="warning" size="sm">Change Password</Button>
                                     </Col>
                                     <Col>
-                                        <Button outline theme="info" size="sm">Export Private Key</Button>
+                                        <Button outline theme="info" size="sm" onClick={getPrivateKey}>Export Private Key</Button>
                                     </Col>
                                 </Row>
                             </CardHeader>
@@ -120,23 +138,24 @@ function UserProfile(){
                                     <div onClick={() => copyToClipboard()} style={{marginRight:'2%'}}>{copysvg}</div>
                                     {copied}
                                 </Row>
+                                <Row style={{marginTop: '1%'}}>
+                                    <Button block href='/allbets'>View Bet History</Button>
+                                </Row>
                                 <hr/>
+                                <Row>Withdrawals and deposits will be enabled once approved by the regulators.</Row>
                                 <Row style={{alignSelf: 'center'}}>
                                     <Col></Col>
                                         <Col>
-                                        <Button outline theme="success" onClick={() => getBalance()}>
+                                        <Button outline theme="success" disabled >
                                             Deposit
                                         </Button>
                                         </Col>
                                         <Col>
-                                        <Button outline theme="secondary">
+                                        <Button outline theme="secondary" disabled>
                                             Withdraw
                                         </Button>
                                         </Col>
                                     <Col></Col>
-                                </Row>
-                                <Row style={{marginTop: '5%'}}>
-                                    <Button block>View Bet History</Button>
                                 </Row>
                             </CardBody>
                         </Card>

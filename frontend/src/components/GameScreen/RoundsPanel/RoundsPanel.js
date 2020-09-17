@@ -16,8 +16,8 @@ import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
 import LastPageIcon from '@material-ui/icons/LastPage';
 import socketIOClient from 'socket.io-client'
-import axios from 'axios'
-const ENDPOINT = 'http://127.0.0.1:4000'
+import API from '../../../axiosInstance'
+const ENDPOINT = 'https://casualita-game-backend.el.r.appspot.com'
 const socket = socketIOClient(ENDPOINT);
 
 const useStyles1 = makeStyles((theme) => ({
@@ -130,7 +130,7 @@ export default function RoundsPanel() {
   useEffect(() => {
     getRounds()
     async function getRounds(){
-      const resp = await axios.get('http://127.0.0.1:4000/allrounds')
+      const resp = await API.get('/allrounds')
       const sortedRounds = resp.data.allRounds.sort((a, b) => (a._roundId > b._roundId ? -1 : 1));
       setRows(sortedRounds)
     }

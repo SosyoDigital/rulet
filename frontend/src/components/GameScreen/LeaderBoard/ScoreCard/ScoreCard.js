@@ -15,7 +15,7 @@ import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
 import LastPageIcon from '@material-ui/icons/LastPage';
 import Avatar from '@material-ui/core/Avatar';
-import axios from 'axios'
+import API from '../../../../axiosInstance'
 
 const useStyles1 = makeStyles((theme) => ({
   root: {
@@ -82,9 +82,6 @@ TablePaginationActions.propTypes = {
   rowsPerPage: PropTypes.number.isRequired,
 };
 
-const staticrows = [
-    {_userAddr: '0x2D4Ffc398E1E4Eb7C00e6A21127E9259d817D618', _betAmount: 100},{_userAddr: '0x2D4Ffc398E1E4Eb7C00e6A21127E9259d817D618', _betAmount: 150},{_userAddr: '0x2D4Ffc398E1E4Eb7C00e6A21127E9259d817D618', _betAmount: 90},{_userAddr: '0x2D4Ffc398E1E4Eb7C00e6A21127E9259d817D618', _betAmount: 200},{_userAddr: '0x2D4Ffc398E1E4Eb7C00e6A21127E9259d817D618', _betAmount: 230}
-].sort((a, b) => (a._betAmount > b._betAmount ? -1 : 1));
 
 const useStyles2 = makeStyles({
   table: {
@@ -100,7 +97,7 @@ export default function CustomPaginationActionsTable() {
 
   useEffect(() => {
       async function getScores(){
-        await axios.get('http://127.0.0.1:4000/getscores')
+        await API.get('/getscores')
             .then(resp => {
                 const scores = resp.data.scores.sort((a, b) => (a._betAmount > b._betAmount ? -1 : 1));
                 setRows(scores)

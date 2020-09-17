@@ -8,157 +8,55 @@ const bodyParser = require('body-parser');
 const cors = require('cors')
 const userAuth = require('./routes/auth');
 const user = require('./routes/user');
+const gameFunctions = require('./gameFunctions');
 const Bets = require('./models/bets');
 const Score = require('./models/score');
-const apiCalls = require('./maticServices');
 const WebSocket = require('ws')
 mongoose.connect(mongoUri, {useNewUrlParser: true, useUnifiedTopology: true}, () => {console.log("Connected to DB")})
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(
-    cors({
-      origin: "http://localhost:3000", // <-- location of the react app were connecting to
-      credentials: true,
-    })
-);
+app.use(cors());
 
 
 //GAME LOGIC FUNCTION - Start
 let numberOfActiveUsers = 0
 let numberOfLoggedinUsers = 0
-let roundId = 800
-let roundPick = null
+let roundId = 18
 
 const time = {
-    second: 0,
-    minute: 0
+    second: 60,
+    minute: 1
 }
 
-setInterval(async() => {
+const gameFunc = async(time, roundId) => {
     if(numberOfLoggedinUsers >= 1 && numberOfActiveUsers>=1){
-        time.second += 1
-        if(time.second == 60){
-            time.second = 0
-            time.minute += 1
+        time.second -= 1
+        if(time.second == 0 && time.minute>0){
+            time.second = 60
+            time.minute -= 1
         }
         io.emit('time-update', {time: time, roundId: roundId})
-        if(time.minute == 1 && time.second == 30){
+        if(time.minute == 0 && time.second == 30){
             io.emit('close-bets', true)
-            pickWinningNumber()
+            gameFunctions.pickWinningNumber(roundId)
         }
-        if(time.minute == 1 && time.second == 55){
-            //closeRound(roundId)
-        }
-        if(time.minute == 2 && time.second == 0){
-            time.minute = 0
-            time.second = 0
+        if(time.minute == 0 && time.second == 0){
+            time.minute = 1
+            time.second = 60
             roundId += 1
             const bets = await Bets.find({}) 
             io.emit('open-bets', {bool: false, bets: bets, roundId: roundId})
         }
     }
+}
+
+setInterval(() => {
+    gameFunc(time, roundId)
 }, 1000)
 
 setInterval(() => {
     io.emit('balance-update')
 }, 15000)
-
-async function pickWinningNumber(){
-    const pick = Math.floor(Math.random() * Math.floor(10))
-    roundPick = pick
-    let isGreen = false
-    if(testprime(roundId)){
-        if(Math.random() >= 0.7){
-            isGreen=true
-        }
-    }
-    const result = {
-        _roundId: roundId,
-        _sysPick: pick,
-        _isGreen: isGreen
-    }
-    const bet = new Bets(result)
-    console.log(pick, isGreen)
-    await bet.save()
-            .catch(err => console.log(err))
-    console.log(result)
-    await apiCalls.game.submitWinningPick(result)
-            .then(resp => {
-                if (!resp.data.success) console.log("Some error occured")
-            })
-            .catch(err => {console.log(err.response.data.error); console.log(err.response.data.error.details.data)})
-}
-
-
-async function settleBets(roundId){
-    const response = await apiCalls.game.getWinners({_roundId: roundId})
-        .catch(e => console.log(e))
-    const numberWinners = response.data.data[0].numberwinners
-    const colorWinners = response.data.data[0].colorWinners
-    const greenWinners = response.data.data[0].greenWinners
-    let winnersSingle = new Array
-    let winners = []
-    let n = 0
-    winnersSingle = getAllWinner(numberWinners, colorWinners, greenWinners)
-    console.log(winnersSingle)
-    for(let i = 0; i<winnersSingle.length/10; i++){
-        winners.push([])
-        for(let j=0; j<10; j++){
-            if(winnersSingle[n]){
-                winners[i].push(winnersSingle[n])
-            }
-            n+=1
-        }
-    }
-    for(let i = 0; i<winners.length; i++){
-        claimBets(winners[i], roundId, i)
-    }
-}
-
-async function claimBets(winners, roundId, i){
-    console.log(winners, roundId, i)
-    const w = JSON.stringify(winners)
-    setTimeout(async() => {
-        await apiCalls.game.claimBet({_addr: w, _roundId: roundId})
-                .catch(err => {console.log(err.response.data.error); console.log(err.response.data.error.details.data)})
-    }, 500*i)
-}
-
-function getAllWinner(numberWinners, colorWinners, greenWinners){
-    let winners = new Array
-    for(let i = 0; i<numberWinners.length; i++){
-        winners.push(numberWinners[i][0])
-    }
-    for(let i = 0; i<colorWinners.length; i++){
-        winners.push(colorWinners[i][0])
-    }
-    for(let i = 0; i<greenWinners.length; i++){
-        winners.push(greenWinners[i][0])
-    }
-    return winners
-}
-
-async function closeRound(roundId){
-    await apiCalls.game.closeRound({_roundId: roundId})
-}
-
-
-function testprime(n){
-    if(n===1){
-        return false
-    } else if(n===2){
-        return true
-    } else {
-        for(let x=2; x<n; x++){
-            if(n%x===0){
-                return false
-            }
-        }
-        return true
-    }
-}
-//GAME LOGIC FUNCTIONS - End
-
 
 //Socket.io Client functions - Start
 io.on('connection', (socket) => {
@@ -237,7 +135,7 @@ function initWS(key){
             if (data.type){
                 if (data.type == 'event'){
                     if(data.event_name=='SubmitPick'){
-                        settleBets(data.event_data._roundId)
+                        gameFunctions.settleBets(data.event_data._roundId)
                     }
                 }
                 return;
@@ -306,5 +204,5 @@ app.get('/getscores', async(req, res) => {
 })
 //Routes - End
 
-
-server.listen(4000, () => {console.log("Server started")})
+const PORT = process.env.PORT || 8080;
+server.listen(PORT, () => {console.log(`Server started ${PORT}`)})

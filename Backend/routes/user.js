@@ -26,7 +26,7 @@ router.post('/addbet', middlewares.isLoggedIn, async (req, res) => {
         .then(user => {
             user._betAmount += amount
             user.save()
-        })
+        }) .catch(err => console.log(err))
     await apiCall.game.placeBet(payload)
     .then(response => {
         if(response.data.success){
@@ -77,6 +77,22 @@ router.post('/changepassword', middlewares.isLoggedIn, async(req, res) => {
                 })
             })
         .catch(err => console.log(err))
+})
+
+router.get('/getallbets',middlewares.isLoggedIn, async(req, res) => {
+    const user = await User.findById(req.user.id)
+                    .select('-password -privKey')
+    const resp = await apiCall.game.getAllBets(user.address)
+    .catch(err => {console.log(err.response.data.error); console.log(err.response.data.error.details.data)})
+    res.status(200).json(resp.data.data[0].bets)
+        
+})
+
+router.get('/getprivatekey', middlewares.isLoggedIn, async(req, res) => {
+    const user = await User.findById(req.user.id)
+                    .select('-password -username -email -referral')
+                .catch(err => console.log(err))
+    res.status(200).json({'privateKey': user.privKey, 'address': user.address})
 })
 
 module.exports = router

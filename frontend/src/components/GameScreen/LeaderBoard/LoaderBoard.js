@@ -1,5 +1,6 @@
 import React from 'react';
 import { Row, Col, Card, CardBody, CardTitle, Container } from "shards-react";
+import EmojiEventsIcon from '@material-ui/icons/EmojiEvents';
 import ScoreCard from './ScoreCard/ScoreCard';
 import { withRouter } from 'react-router-dom';
 
@@ -11,7 +12,7 @@ function LeaderBoard(){
                     <Col sm="12" md="4" lg="2"/>
                         <Col sm="12" md="4" lg="8">
                             <Card style={{textAlign: 'center', marginTop: '3%'}}>
-                                <CardTitle style={{margin:'2%'}}>Leaderboard</CardTitle>
+                                <CardTitle style={{margin:'2%'}}>Leaderboard <EmojiEventsIcon/></CardTitle>
                                 <CardBody>
                                     <ScoreCard/>
                                 </CardBody>

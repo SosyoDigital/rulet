@@ -12,15 +12,16 @@ import {
   ModalBody,
   Form, FormInput, FormGroup,
   Button,
-  Alert
+  Alert,
+  Row
 } from "shards-react";
 import {Redirect, withRouter} from 'react-router-dom'
 import socketIOClient from 'socket.io-client'
-import axios from 'axios'
+import API from '../../axiosInstance'
 import Logo from '../../assets/logo2.png'
-import ReactTelInput from 'react-telephone-input'
+import CircularProgress from '@material-ui/core/CircularProgress';
 import 'react-telephone-input/css/default.css'
-const ENDPOINT = 'http://127.0.0.1:4000'
+const ENDPOINT = 'https://casualita-game-backend.el.r.appspot.com'
 const socket = socketIOClient(ENDPOINT);
 
 
@@ -50,7 +51,9 @@ class NavBar extends React.Component {
       referralId: '',
       otpOpen: false,
       signupOtpSession: null,
-      otpInput: ''
+      otpInput: '',
+      loader: false,
+      loginloader: false
     };
   }
 
@@ -88,7 +91,8 @@ class NavBar extends React.Component {
   }
 
   async handleLoginSubmit(){
-    const resp = await axios.post('http://localhost:4000/user/login', {
+    this.setState({loginloader: true})
+    const resp = await API.post('/user/login', {
       username: this.state.loginUsernameInput,
       password: this.state.loginPasswordInput
     })
@@ -99,6 +103,7 @@ class NavBar extends React.Component {
       await localStorage.setItem('email', resp.data.user.email)
       this.setState({username: resp.data.user.username, isAuthenticated: true, loginModalShow: !this.state.loginModalShow, msg: resp.data.msg})
       socket.emit('login')
+      this.setState({loginloader: false})
       window.location.reload(false);
     } else {
       this.setState({isError: true, msg: resp.data.msg})
@@ -107,8 +112,7 @@ class NavBar extends React.Component {
 
   async handleSignupSubmit(){
     this.setState({otpOpen: !this.state.otpOpen})
-    if(this.state.signUpPasswordInput==this.state.signUpConfirmPasswordInput){
-      await axios.post('http://localhost:4000/user/register', {
+      await API.post('/user/register', {
         username: this.state.signUpUsernameInput,
         password: this.state.signUpPasswordInput,
         email: this.state.signUpEmailInput,
@@ -119,7 +123,7 @@ class NavBar extends React.Component {
         this.setState({msg: resp.data.msg})
         localStorage.setItem('token', resp.data.token)
         localStorage.setItem('user', resp.data.user.username)
-        this.setState({signUpModalShow: !this.state.signUpModalShow, isAuthenticated: true})
+        this.setState({signUpModalShow: !this.state.signUpModalShow, isAuthenticated: true, loader: false})
         socket.emit('login')
         window.location.reload();
         }
@@ -127,13 +131,10 @@ class NavBar extends React.Component {
       .catch(err => {
         this.setState({msg: err.msg})
       })
-    } else {
-      this.setState({msg: 'Passwords dont match!'})
-    }
   }
 
   async sendOtp(){
-    const resp = await axios.post('http://127.0.0.1:4000/user/register/sendotp', {
+    const resp = await API.post('/user/register/sendotp', {
       phoneNumber: this.state.signUpUsernameInput
     })
     if(resp.data.success){
@@ -145,11 +146,12 @@ class NavBar extends React.Component {
   }
 
   async verifyOtp(){
-    const resp = await axios.post('http://127.0.0.1:4000/user/register/verifyotp', {
+    const resp = await API.post('/user/register/verifyotp', {
       sessionId: this.state.signupOtpSession,
       otp: this.state.otpInput
     })
     if(resp.data.success){
+      this.setState({loader: true})
       this.handleSignupSubmit()
     } else {
       this.setState({msg: 'Some error has occured. Please try again later.', otpOpen: !this.state.otpOpen})
@@ -193,6 +195,7 @@ class NavBar extends React.Component {
     const signupmodal = <Modal open={this.state.signUpModalShow} toggle={this.openSignupModal}>
                             <ModalHeader>Sign Up</ModalHeader>
                             <ModalBody>
+                              {this.state.loader ? <CircularProgress/> : null}
                                 <FormGroup>
                                   <label htmlFor="#username">Phone number  (OTP will be sent to this number for verification)</label>
                                   <FormInput onChange={e => this.setState({signUpUsernameInput: e.target.value})} id="#username" placeholder="Phone number (Country code if residing outside IN)"/>
@@ -204,10 +207,6 @@ class NavBar extends React.Component {
                                 <FormGroup>
                                   <label htmlFor="#password">Password</label>
                                   <FormInput onChange={e => this.setState({signUpPasswordInput: e.target.value})} type="password" id="#password" placeholder="Password" />
-                                </FormGroup>
-                                <FormGroup>
-                                  <label htmlFor="#confirmpassword">Confirm Password</label>
-                                  <FormInput onChange={e => this.setState({signUpConfirmPasswordInput: e.target.value})} type="password" id="#confirmpassword" placeholder="Password" />
                                 </FormGroup>
                                 <FormGroup>
                                   <label htmlFor="#referralId">Referral Id</label>
@@ -237,13 +236,14 @@ class NavBar extends React.Component {
                               <Button onClick={() => this.handleLoginSubmit()}>Login</Button>
                               <span style={{marginLeft: '5%'}} onClick={() => this.setState({loginModalShow:false})}>Cancel</span>
                             </FormGroup>
+                            {this.state.loginloader ? <div style={{textAlign: 'center'}}>{<CircularProgress/>}</div> : null}
                         </Form>
                       </ModalBody>
                     </Modal>
     return (
       <div>
       <Navbar type="dark" theme="primary" expand="md">
-        <NavbarBrand href="/"><img src={Logo} style={{height: 40}}/></NavbarBrand>
+        <NavbarBrand href="/"><img src={Logo} style={{height: 40}} alt='logo'/></NavbarBrand>
         <NavbarToggler onClick={this.toggleNavbar} />
 
         <Collapse open={this.state.collapseOpen} navbar>

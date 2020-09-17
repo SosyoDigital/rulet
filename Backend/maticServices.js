@@ -28,7 +28,6 @@ module.exports = {
     },
     game: {
         placeBet(payload){
-            console.log(payload)
             return gameInstance.post('/placeBet', {
                 _roundId: payload._roundId,
                 _addr: payload._addr,
@@ -47,6 +46,9 @@ module.exports = {
         },
         closeRound(payload){
             return gameInstance.post('/closeRound', payload)
+        },
+        getAllBets(payload){
+            return gameInstance.get('/getAllPersonalBets/'+payload)
         }
     }
 }

@@ -20,6 +20,7 @@ contract CasualitaTest {
         address userAddress;
         uint256 amount;
         uint8 pick;
+        uint256 roundId;
     }
     
     mapping (uint => Bet[]) public roundBets;
@@ -36,7 +37,7 @@ contract CasualitaTest {
     //Pick is 11 for red color bet, 12 for black color bet and 13 for green bet 
     
     function placeBet(uint256 _roundId,address _addr, uint8 _pick, uint256 _amt) public returns(bool){
-        Bet memory b = Bet(_addr, _amt, _pick);
+        Bet memory b = Bet(_addr, _amt, _pick, _roundId);
         erc20.transferFrom(_addr, address(this), _amt);
         roundBets[_roundId].push(b);
         winners[_roundId][_pick].push(b);
