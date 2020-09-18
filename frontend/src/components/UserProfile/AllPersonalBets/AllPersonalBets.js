@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, ListGroup, ListGroupItem } from "shards-react";
 import { makeStyles } from '@material-ui/core/styles';
-import API from '../../../axiosInstance';
+import axios from 'axios';
 import {withRouter} from 'react-router-dom';
 import AttachMoneyIcon from '@material-ui/icons/AttachMoney';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -41,7 +41,7 @@ function AllPersonalBets(){
     useEffect(() => {
         async function getAllBets(){
             const token = localStorage.getItem('token')
-            const resp = await API.get('/user/getallbets',{
+            const resp = await axios.get('http://35.240.197.189/user/getallbets',{
                 headers: {
                 'x-auth-token': token
                 }

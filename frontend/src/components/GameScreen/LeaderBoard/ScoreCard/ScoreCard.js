@@ -15,7 +15,7 @@ import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
 import LastPageIcon from '@material-ui/icons/LastPage';
 import Avatar from '@material-ui/core/Avatar';
-import API from '../../../../axiosInstance'
+import axios from 'axios'
 
 const useStyles1 = makeStyles((theme) => ({
   root: {
@@ -97,7 +97,7 @@ export default function CustomPaginationActionsTable() {
 
   useEffect(() => {
       async function getScores(){
-        await API.get('/getscores')
+        await axios.get('http://35.240.197.189/getscores')
             .then(resp => {
                 const scores = resp.data.scores.sort((a, b) => (a._betAmount > b._betAmount ? -1 : 1));
                 setRows(scores)

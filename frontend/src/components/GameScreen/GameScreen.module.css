@@ -1,0 +1,6 @@
+.background { 
+    background-image: url('../../assets/background.jpg');
+    background-position: fixed;
+    background-size: cover;
+    background-repeat: repeat;
+}

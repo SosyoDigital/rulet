@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, CardHeader, CardTitle, CardBody, Button, Modal, ModalHeader, ModalBody, FormInput, FormGroup, Alert} from "shards-react";
-import API from '../../axiosInstance'
+import axios from 'axios'
 import Avatar from '@material-ui/core/Avatar';
 import profileImage from '../../assets/person.png'
 import { withRouter } from 'react-router-dom';
@@ -20,7 +20,7 @@ function UserProfile(props){
     useEffect(() => {
         const token = localStorage.getItem('token')
         const getUser = async(token) => {
-            await API.get('/user', {
+            await axios.get('http://35.240.197.189/user', {
                 headers: {
                     'x-auth-token': token
                 }
@@ -39,7 +39,7 @@ function UserProfile(props){
 
     const handlePasswordChange = async() => {
         const token = localStorage.getItem('token')
-        const resp = await API.post('/user/changepassword',{
+        const resp = await axios.post('http://35.240.197.189/user/changepassword',{
             currentPassword: currentPassword,
             newPassword: newPassword
         },{headers: {
@@ -54,7 +54,7 @@ function UserProfile(props){
 
     const getBalance = async (address) => {
         const token = localStorage.getItem('token')
-        const resp = await API.get('/user/getbalance', {
+        const resp = await axios.get('http://35.240.197.189/user/getbalance', {
             headers: {
             'x-auth-token': token
             }
@@ -68,7 +68,7 @@ function UserProfile(props){
 
     const getPrivateKey = async() => {
         const token = localStorage.getItem('token')
-        const resp = await API.get('/user/getprivatekey',{
+        const resp = await axios.get('http://35.240.197.189/user/getprivatekey',{
             headers: {
             'x-auth-token': token
             }

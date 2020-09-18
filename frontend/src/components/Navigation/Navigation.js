@@ -17,11 +17,11 @@ import {
 } from "shards-react";
 import {Redirect, withRouter} from 'react-router-dom'
 import socketIOClient from 'socket.io-client'
-import API from '../../axiosInstance'
+import axios from 'axios'
 import Logo from '../../assets/logo2.png'
 import CircularProgress from '@material-ui/core/CircularProgress';
 import 'react-telephone-input/css/default.css'
-const ENDPOINT = 'https://casualita-game-backend.el.r.appspot.com'
+const ENDPOINT = 'http://35.240.197.189'
 const socket = socketIOClient(ENDPOINT);
 
 
@@ -92,7 +92,7 @@ class NavBar extends React.Component {
 
   async handleLoginSubmit(){
     this.setState({loginloader: true})
-    const resp = await API.post('/user/login', {
+    const resp = await axios.post('http://35.240.197.189/user/login', {
       username: this.state.loginUsernameInput,
       password: this.state.loginPasswordInput
     })
@@ -112,7 +112,7 @@ class NavBar extends React.Component {
 
   async handleSignupSubmit(){
     this.setState({otpOpen: !this.state.otpOpen})
-      await API.post('/user/register', {
+      await axios.post('http://35.240.197.189/user/register', {
         username: this.state.signUpUsernameInput,
         password: this.state.signUpPasswordInput,
         email: this.state.signUpEmailInput,
@@ -134,7 +134,7 @@ class NavBar extends React.Component {
   }
 
   async sendOtp(){
-    const resp = await API.post('/user/register/sendotp', {
+    const resp = await axios.post('http://35.240.197.189/user/register/sendotp', {
       phoneNumber: this.state.signUpUsernameInput
     })
     if(resp.data.success){
@@ -146,7 +146,7 @@ class NavBar extends React.Component {
   }
 
   async verifyOtp(){
-    const resp = await API.post('/user/register/verifyotp', {
+    const resp = await axios.post('http://35.240.197.189/user/register/verifyotp', {
       sessionId: this.state.signupOtpSession,
       otp: this.state.otpInput
     })

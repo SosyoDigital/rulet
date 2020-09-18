@@ -3,9 +3,9 @@ import { Row, Col, Card, CardBody, CardTitle, Button, Modal, ModalBody, ModalHea
 import classes from './GamePanel.module.css'
 import CancelIcon from '@material-ui/icons/Cancel';
 import socketIOClient from 'socket.io-client'
-import API from '../../../axiosInstance'
+import axios from 'axios'
 import CircularProgress from '@material-ui/core/CircularProgress';
-const ENDPOINT = 'https://casualita-game-backend.el.r.appspot.com'
+const ENDPOINT = 'http://35.240.197.189/'
 const socket = socketIOClient(ENDPOINT);
 export default class GamePanel extends React.Component {
     constructor(props) {
@@ -43,7 +43,7 @@ export default class GamePanel extends React.Component {
 
     getBalance = async() => {
         const token = localStorage.getItem('token')
-        const resp = await API.get('/user/getbalance', {
+        const resp = await axios.get('http://35.240.197.189/user/getbalance', {
             headers: {
             'x-auth-token': token
             }
@@ -96,7 +96,7 @@ export default class GamePanel extends React.Component {
             default:
                 p=betChoice
         }
-        const resp = await API.post('/user/addbet',{
+        const resp = await axios.post('http://35.240.197.189/user/addbet',{
             roundId: roundId,
             amount: betAmount,
             pick: p,

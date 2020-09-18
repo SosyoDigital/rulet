@@ -21,37 +21,33 @@ app.use(cors());
 //GAME LOGIC FUNCTION - Start
 let numberOfActiveUsers = 0
 let numberOfLoggedinUsers = 0
-let roundId = 18
+let roundId = 0
 
 const time = {
-    second: 60,
-    minute: 1
+    second: 0,
+    minute: 0
 }
 
-const gameFunc = async(time, roundId) => {
+setInterval(async() => {
     if(numberOfLoggedinUsers >= 1 && numberOfActiveUsers>=1){
-        time.second -= 1
-        if(time.second == 0 && time.minute>0){
-            time.second = 60
-            time.minute -= 1
+        time.second += 1
+        if(time.second == 60){
+            time.second = 0
+            time.minute += 1
         }
         io.emit('time-update', {time: time, roundId: roundId})
-        if(time.minute == 0 && time.second == 30){
+        if(time.minute == 1 && time.second == 30){
             io.emit('close-bets', true)
             gameFunctions.pickWinningNumber(roundId)
         }
-        if(time.minute == 0 && time.second == 0){
-            time.minute = 1
-            time.second = 60
+        if(time.minute == 2 && time.second == 0){
+            time.minute = 0
+            time.second = 0
             roundId += 1
             const bets = await Bets.find({}) 
             io.emit('open-bets', {bool: false, bets: bets, roundId: roundId})
         }
     }
-}
-
-setInterval(() => {
-    gameFunc(time, roundId)
 }, 1000)
 
 setInterval(() => {
