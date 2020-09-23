@@ -15,9 +15,10 @@ import FirstPageIcon from '@material-ui/icons/FirstPage';
 import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
 import LastPageIcon from '@material-ui/icons/LastPage';
+import CircularProgess from '@material-ui/core/CircularProgress';
 import socketIOClient from 'socket.io-client'
 import axios from 'axios'
-const ENDPOINT = 'http://35.240.197.189'
+const ENDPOINT = 'https://casualita-api.app/'
 const socket = socketIOClient(ENDPOINT);
 
 const useStyles1 = makeStyles((theme) => ({
@@ -126,13 +127,15 @@ export default function RoundsPanel() {
   const [rows, setRows] = useState(null)
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [isLoading, setisLoading] = React.useState(true)
 
   useEffect(() => {
     getRounds()
     async function getRounds(){
-      const resp = await axios.get('http://35.240.197.189/allrounds')
+      const resp = await axios.get('https://casualita-api.app/allrounds')
       const sortedRounds = resp.data.allRounds.sort((a, b) => (a._roundId > b._roundId ? -1 : 1));
       setRows(sortedRounds)
+      setisLoading(false)
     }
     socket.on('open-bets', data => {
       const sortedRounds = data.bets.sort((a, b) => (a._roundId > b._roundId ? -1 : 1));
@@ -153,6 +156,7 @@ export default function RoundsPanel() {
 
   return (
     <TableContainer component={Paper}>
+    {isLoading? <CircularProgess/> : null}
     {rows ? 
       <Table className={classes.table} aria-label="custom pagination table">
       <TableHead>

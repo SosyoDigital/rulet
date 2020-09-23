@@ -20,7 +20,7 @@ function UserProfile(props){
     useEffect(() => {
         const token = localStorage.getItem('token')
         const getUser = async(token) => {
-            await axios.get('http://35.240.197.189/user', {
+            await axios.get('https://casualita-api.app/user', {
                 headers: {
                     'x-auth-token': token
                 }
@@ -39,7 +39,7 @@ function UserProfile(props){
 
     const handlePasswordChange = async() => {
         const token = localStorage.getItem('token')
-        const resp = await axios.post('http://35.240.197.189/user/changepassword',{
+        const resp = await axios.post('https://casualita-api.app/user/changepassword',{
             currentPassword: currentPassword,
             newPassword: newPassword
         },{headers: {
@@ -54,7 +54,7 @@ function UserProfile(props){
 
     const getBalance = async (address) => {
         const token = localStorage.getItem('token')
-        const resp = await axios.get('http://35.240.197.189/user/getbalance', {
+        const resp = await axios.get('https://casualita-api.app/user/getbalance', {
             headers: {
             'x-auth-token': token
             }
@@ -68,7 +68,7 @@ function UserProfile(props){
 
     const getPrivateKey = async() => {
         const token = localStorage.getItem('token')
-        const resp = await axios.get('http://35.240.197.189/user/getprivatekey',{
+        const resp = await axios.get('https://casualita-api.app/user/getprivatekey',{
             headers: {
             'x-auth-token': token
             }

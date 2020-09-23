@@ -5,7 +5,7 @@ import CancelIcon from '@material-ui/icons/Cancel';
 import socketIOClient from 'socket.io-client'
 import axios from 'axios'
 import CircularProgress from '@material-ui/core/CircularProgress';
-const ENDPOINT = 'http://35.240.197.189/'
+const ENDPOINT = 'https://casualita-api.app/'
 const socket = socketIOClient(ENDPOINT);
 export default class GamePanel extends React.Component {
     constructor(props) {
@@ -43,7 +43,7 @@ export default class GamePanel extends React.Component {
 
     getBalance = async() => {
         const token = localStorage.getItem('token')
-        const resp = await axios.get('http://35.240.197.189/user/getbalance', {
+        const resp = await axios.get('https://casualita-api.app/user/getbalance', {
             headers: {
             'x-auth-token': token
             }
@@ -96,7 +96,7 @@ export default class GamePanel extends React.Component {
             default:
                 p=betChoice
         }
-        const resp = await axios.post('http://35.240.197.189/user/addbet',{
+        const resp = await axios.post('https://casualita-api.app/user/addbet',{
             roundId: roundId,
             amount: betAmount,
             pick: p,

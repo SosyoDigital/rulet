@@ -21,7 +21,7 @@ import axios from 'axios'
 import Logo from '../../assets/logo2.png'
 import CircularProgress from '@material-ui/core/CircularProgress';
 import 'react-telephone-input/css/default.css'
-const ENDPOINT = 'http://35.240.197.189'
+const ENDPOINT = 'https://casualita-api.app/'
 const socket = socketIOClient(ENDPOINT);
 
 
@@ -92,7 +92,7 @@ class NavBar extends React.Component {
 
   async handleLoginSubmit(){
     this.setState({loginloader: true})
-    const resp = await axios.post('http://35.240.197.189/user/login', {
+    const resp = await axios.post('https://casualita-api.app/user/login', {
       username: this.state.loginUsernameInput,
       password: this.state.loginPasswordInput
     })
@@ -112,7 +112,7 @@ class NavBar extends React.Component {
 
   async handleSignupSubmit(){
     this.setState({otpOpen: !this.state.otpOpen})
-      await axios.post('http://35.240.197.189/user/register', {
+      await axios.post('https://casualita-api.app/user/register', {
         username: this.state.signUpUsernameInput,
         password: this.state.signUpPasswordInput,
         email: this.state.signUpEmailInput,
@@ -134,7 +134,7 @@ class NavBar extends React.Component {
   }
 
   async sendOtp(){
-    const resp = await axios.post('http://35.240.197.189/user/register/sendotp', {
+    const resp = await axios.post('https://casualita-api.app/user/register/sendotp', {
       phoneNumber: this.state.signUpUsernameInput
     })
     if(resp.data.success){
@@ -146,7 +146,7 @@ class NavBar extends React.Component {
   }
 
   async verifyOtp(){
-    const resp = await axios.post('http://35.240.197.189/user/register/verifyotp', {
+    const resp = await axios.post('https://casualita-api.app/user/register/verifyotp', {
       sessionId: this.state.signupOtpSession,
       otp: this.state.otpInput
     })
@@ -209,8 +209,8 @@ class NavBar extends React.Component {
                                   <FormInput onChange={e => this.setState({signUpPasswordInput: e.target.value})} type="password" id="#password" placeholder="Password" />
                                 </FormGroup>
                                 <FormGroup>
-                                  <label htmlFor="#referralId">Referral Id</label>
-                                  <FormInput onChange={e => this.setState({referralId: e.target.value})} type="text" id="#referralId" placeholder="Referral Id" />
+                                  <label htmlFor="#referralId">Referral Id (Optional)</label>
+                                  <FormInput onChange={e => this.setState({referralId: e.target.value})} type="text" id="#referralId" placeholder="Referral Id (Optional)" />
                                 </FormGroup>
                                 <FormGroup>
                                   <Button onClick={() => this.sendOtp()}>Proceed</Button>
@@ -253,11 +253,13 @@ class NavBar extends React.Component {
                 Play!
               </NavLink>
             </NavItem>
+            {localStorage.getItem('user')?
             <NavItem>
               <NavLink href="/leaderboard">
                 Leaderboard
               </NavLink>
             </NavItem>
+            : null}
           </Nav>
           {this.state.isAuthenticated ? 
           <Nav navbar className="ml-auto">

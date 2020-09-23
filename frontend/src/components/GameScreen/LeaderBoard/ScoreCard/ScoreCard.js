@@ -97,7 +97,7 @@ export default function CustomPaginationActionsTable() {
 
   useEffect(() => {
       async function getScores(){
-        await axios.get('http://35.240.197.189/getscores')
+        await axios.get('https://casualita-api.app/getscores')
             .then(resp => {
                 const scores = resp.data.scores.sort((a, b) => (a._betAmount > b._betAmount ? -1 : 1));
                 setRows(scores)

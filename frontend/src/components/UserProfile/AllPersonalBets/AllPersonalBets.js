@@ -41,7 +41,7 @@ function AllPersonalBets(){
     useEffect(() => {
         async function getAllBets(){
             const token = localStorage.getItem('token')
-            const resp = await axios.get('http://35.240.197.189/user/getallbets',{
+            const resp = await axios.get('https://casualita-api.app/user/getallbets',{
                 headers: {
                 'x-auth-token': token
                 }
